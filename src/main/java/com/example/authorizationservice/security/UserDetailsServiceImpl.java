@@ -1,9 +1,7 @@
 package com.example.authorizationservice.security;
 
 import com.example.authorizationservice.model.Secure;
-import com.example.authorizationservice.model.User;
 import com.example.authorizationservice.repository.SecureRepository;
-import com.example.authorizationservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class UserDetailsServiceImpl implements UserDetailsService {
+
     SecureRepository secureRepository;
 
     @Autowired
@@ -26,6 +25,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         Secure secure = secureRepository.findByLogin(login)
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found with login: " + login));
 
-        return JwtUser.build(secure.getUser(),secure);
+        return JwtUser.build(secure.getUser(), secure);
     }
 }

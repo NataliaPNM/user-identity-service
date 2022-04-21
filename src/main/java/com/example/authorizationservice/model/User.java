@@ -2,8 +2,18 @@ package com.example.authorizationservice.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.EnumType;
+import javax.persistence.Column;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
 
-import javax.persistence.*;
 
 @Data
 @Entity

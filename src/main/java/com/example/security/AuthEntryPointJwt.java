@@ -1,4 +1,4 @@
-package com.example.authorizationservice.security;
+package com.example.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;

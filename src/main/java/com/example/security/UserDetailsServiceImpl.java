@@ -1,7 +1,7 @@
-package com.example.authorizationservice.security;
+package com.example.security;
 
-import com.example.authorizationservice.model.Secure;
-import com.example.authorizationservice.repository.SecureRepository;
+import com.example.model.Secure;
+import com.example.repository.SecureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -1,18 +1,20 @@
-package com.example.authorizationservice.AuthService;
+package com.example.service;
 
-import com.example.authorizationservice.dto.ChangePasswordRequest;
-import com.example.authorizationservice.dto.LoginRequest;
-import com.example.authorizationservice.dto.LoginResponseDto;
-import com.example.authorizationservice.model.Secure;
-import com.example.authorizationservice.repository.SecureRepository;
-import com.example.authorizationservice.security.JwtUtils;
+import com.example.dto.ChangePasswordRequest;
+import com.example.dto.LoginRequest;
+import com.example.dto.LoginResponseDto;
+import com.example.model.Secure;
+import com.example.repository.SecureRepository;
+import com.example.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.Optional;
 
 
 @Service
@@ -41,7 +43,7 @@ public class AuthService {
     public LoginResponseDto refreshJwt(String authHeader) {
         String token = jwtUtils.parseJwt(authHeader);
         if (!jwtUtils.validateJwtToken(token)) {
-            throw new RuntimeException("Auth failed");
+            throw new AuthenticationServiceException("Auth failed");
         }
 
         String email = jwtUtils.getLoginFromJwtToken(token);
@@ -55,10 +57,13 @@ public class AuthService {
     }
 
     public void changePassword(ChangePasswordRequest changePasswordRequest, Long userId) {
-        Secure secure = secureRepository.findById(userId).get();
+        Optional<Secure> secureData = secureRepository.findById(userId);
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        secure.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
-        secureRepository.save(secure);
+         if(secureData.isPresent()) {
+             Secure secure = secureData.get();
+             secure.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+             secureRepository.save(secure);
 
+         }
     }
 }

@@ -1,4 +1,4 @@
-package com.example.authorizationservice.model;
+package com.example.model;
 
 public enum UserRole {
     ROLE_USER,

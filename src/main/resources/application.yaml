@@ -1,5 +1,11 @@
 server:
   port: '8090'
+
+jwtSecret: meetingRoomApplicationSecretKey
+jwtExpirationMs: '86400000'
+jwtRefreshExpirationMs: '2000000000'
+
+---
 spring:
   datasource:
     url: 'jdbc:postgresql://localhost:5432/authorization-service'
@@ -9,18 +15,16 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQL10Dialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
   sql:
     init:
       mode: always
   application:
     name: user-identity
+
+---
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
-jwtSecret: meetingRoomApplicationSecretKey
-jwtExpirationMs: '86400000'
-jwtRefreshExpirationMs: '2000000000'
-

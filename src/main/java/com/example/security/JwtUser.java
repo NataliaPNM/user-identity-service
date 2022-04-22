@@ -1,7 +1,7 @@
-package com.example.authorizationservice.security;
+package com.example.security;
 
-import com.example.authorizationservice.model.Secure;
-import com.example.authorizationservice.model.User;
+import com.example.model.Secure;
+import com.example.model.User;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,20 +17,16 @@ public class JwtUser implements UserDetails {
     private Long phone;
     private String username;
     private String surname;
-    private String patronymic;
-    private String email;
     private String login;
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
 
-    public JwtUser(Long id, Long phone, String username,String surname, String patronymic, String email,String login,String password,
+    public JwtUser(Long id, Long phone, String username,String surname, String login,String password,
                    Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.phone = phone;
         this.username = username;
         this.surname = surname;
-        this.patronymic = patronymic;
-        this.email = email;
         this.login = login;
         this.password = password;
         this.authorities = authorities;
@@ -43,8 +39,6 @@ public class JwtUser implements UserDetails {
                 user.getPhone(),
                 user.getName(),
                 user.getSurname(),
-                user.getPatronymic(),
-                user.getEmail(),
                 secure.getLogin(),
                 secure.getPassword(),
                 authorities);

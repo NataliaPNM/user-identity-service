@@ -1,6 +1,6 @@
-package com.example.authorizationservice.repository;
+package com.example.repository;
 
-import com.example.authorizationservice.model.Secure;
+import com.example.model.Secure;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

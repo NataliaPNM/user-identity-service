@@ -1,7 +1,11 @@
-package com.example.authorizationservice.model;
+package com.example.model;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.EnumType;
@@ -19,6 +23,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "Users")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -37,7 +44,7 @@ public class User {
     private String email;
 
     @Enumerated(EnumType.STRING)
-    @Column(insertable = false, updatable = false)
+    @Column(insertable = true, updatable = true)
     private UserRole role;
 
 

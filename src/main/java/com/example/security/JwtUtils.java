@@ -1,22 +1,17 @@
-package com.example.authorizationservice.security;
+package com.example.security;
 
-
-import com.example.authorizationservice.model.User;
-import com.example.authorizationservice.repository.SecureRepository;
-import com.example.authorizationservice.repository.UserRepository;
+import com.example.repository.SecureRepository;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.util.Optional;
 
 @Component
 public class JwtUtils {
@@ -30,13 +25,10 @@ public class JwtUtils {
     @Value("${jwtRefreshExpirationMs}")
     private int jwtRefreshExpirationMs;
 
-    private final UserRepository userRepository;
-
     private final SecureRepository secureRepository;
 
     @Autowired
-    public JwtUtils(UserRepository userRepository,SecureRepository secureRepository){
-        this.userRepository = userRepository;
+    public JwtUtils(SecureRepository secureRepository){
         this.secureRepository = secureRepository;
     }
 

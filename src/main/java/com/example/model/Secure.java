@@ -1,6 +1,9 @@
-package com.example.authorizationservice.model;
+package com.example.model;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -8,14 +11,15 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-
-
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 @Data
 @Entity
 @Table(name = "SecureData")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Secure {
 
         @Id

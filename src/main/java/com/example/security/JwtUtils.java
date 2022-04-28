@@ -28,40 +28,44 @@ public class JwtUtils {
     private final SecureRepository secureRepository;
 
     @Autowired
-    public JwtUtils(SecureRepository secureRepository){
+    public JwtUtils(SecureRepository secureRepository) {
         this.secureRepository = secureRepository;
     }
 
-    public String generateJwtToken(Authentication authentication){
+    public String generateJwtToken(Authentication authentication) {
 
         JwtUser userPrincipal = (JwtUser) authentication.getPrincipal();
         return generateJwtToken(userPrincipal.getLogin());
     }
 
-    public String generateJwtToken(String login){
+    public String generateJwtToken(String login) {
         secureRepository.findByLogin(login).orElseThrow(RuntimeException::new);
         return Jwts.builder()
                 .setSubject(login)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime()+ jwtExpirationMs))
-                .signWith(SignatureAlgorithm.HS512,jwtSecret)
+                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
-    public String generateRefreshToken(Authentication authentication){
+
+    public String generateRefreshToken(Authentication authentication) {
         JwtUser userPrincipal = (JwtUser) authentication.getPrincipal();
         return generateRefreshToken(userPrincipal.getLogin());
     }
-    public String generateRefreshToken(String login){
+
+    public String generateRefreshToken(String login) {
         return Jwts.builder()
                 .setSubject(login)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime()+ jwtRefreshExpirationMs))
-                .signWith(SignatureAlgorithm.HS512,jwtSecret)
+                .setExpiration(new Date((new Date()).getTime() + jwtRefreshExpirationMs))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
+
     public String getLoginFromJwtToken(String token) {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
     }
+
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
@@ -80,9 +84,9 @@ public class JwtUtils {
 
         return false;
     }
+
     public String parseJwt(HttpServletRequest request) {
         String headerAuth = request.getHeader("Authorization");
-
         return parseJwt(headerAuth);
     }
 

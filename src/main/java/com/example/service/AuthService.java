@@ -3,6 +3,7 @@ package com.example.service;
 import com.example.dto.ChangePasswordRequest;
 import com.example.dto.LoginRequest;
 import com.example.dto.LoginResponseDto;
+import com.example.mapper.LoginResponseMapper;
 import com.example.model.Secure;
 import com.example.repository.SecureRepository;
 import com.example.security.JwtUtils;
@@ -12,7 +13,6 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 
@@ -24,7 +24,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final SecureRepository secureRepository;
-
+    private final LoginResponseMapper loginResponseMapper;
 
     public LoginResponseDto login(LoginRequest loginRequest) {
 
@@ -34,10 +34,7 @@ public class AuthService {
         String jwt = jwtUtils.generateJwtToken(authentication);
         String refreshJwt = jwtUtils.generateRefreshToken(authentication);
 
-        LoginResponseDto loginResponseDto = new LoginResponseDto();
-        loginResponseDto.setRefreshToken(refreshJwt);
-        loginResponseDto.setToken(jwt);
-        return loginResponseDto;
+        return loginResponseMapper.toLoginResponseDto(jwt,refreshJwt);
     }
 
     public LoginResponseDto refreshJwt(String authHeader) {
@@ -45,25 +42,19 @@ public class AuthService {
         if (!jwtUtils.validateJwtToken(token)) {
             throw new AuthenticationServiceException("Auth failed");
         }
-
         String email = jwtUtils.getLoginFromJwtToken(token);
         String accessToken = jwtUtils.generateJwtToken(email);
         String refreshToken = jwtUtils.generateRefreshToken(email);
 
-        LoginResponseDto loginResponseDto = new LoginResponseDto();
-        loginResponseDto.setRefreshToken(refreshToken);
-        loginResponseDto.setToken(accessToken);
-        return loginResponseDto;
+        return loginResponseMapper.toLoginResponseDto(accessToken,refreshToken);
     }
 
     public void changePassword(ChangePasswordRequest changePasswordRequest, Long userId) {
         Optional<Secure> secureData = secureRepository.findById(userId);
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
          if(secureData.isPresent()) {
              Secure secure = secureData.get();
-             secure.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+             secure.setPassword(new BCryptPasswordEncoder().encode(changePasswordRequest.getNewPassword()));
              secureRepository.save(secure);
-
          }
     }
 }

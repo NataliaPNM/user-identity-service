@@ -2,7 +2,6 @@ package com.example;
 
 import com.example.repository.SecureRepository;
 import com.example.security.JwtUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -10,8 +9,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import static org.junit.Assert.assertEquals;
 
-public class AuthControllerIntegrationTest extends AuthorizationServiceApplicationTests {
+public class AuthControllerIntegrationTest extends AuthorizationServiceApplicationTests{
 
     @Autowired
     protected JwtUtils jwtUtils;
@@ -26,7 +26,7 @@ public class AuthControllerIntegrationTest extends AuthorizationServiceApplicati
                 HttpMethod.POST, new HttpEntity<>(InitDataForTests.getChangePasswordRequestForTest(), headers),
                 new ParameterizedTypeReference<>() {
                 });
-        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
 }

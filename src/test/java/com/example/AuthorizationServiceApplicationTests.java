@@ -15,7 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -56,7 +57,7 @@ class AuthorizationServiceApplicationTests {
 
         String resp = response.getBody();
 
-        return Objects.requireNonNull(resp).substring(10, resp.indexOf("\"", 10));
+        return requireNonNull(resp).substring(10, resp.indexOf("\"", 10));
     }
 
     protected String createURLWithPort(String uri) {

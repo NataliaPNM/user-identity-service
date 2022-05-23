@@ -49,12 +49,13 @@ public class AuthService {
         return loginResponseMapper.toLoginResponseDto(accessToken,refreshToken);
     }
 
-    public void changePassword(ChangePasswordRequest changePasswordRequest, Long userId) {
+    public String changePassword(ChangePasswordRequest changePasswordRequest, Long userId) {
         Optional<Secure> secureData = secureRepository.findById(userId);
          if(secureData.isPresent()) {
              Secure secure = secureData.get();
              secure.setPassword(new BCryptPasswordEncoder().encode(changePasswordRequest.getNewPassword()));
              secureRepository.save(secure);
          }
+         return "Password changed!";
     }
 }

@@ -21,10 +21,18 @@ spring:
     init:
       mode: always
   application:
-    name: user-identity
-
----
+      name: user-identity
+  mvc:
+    pathmatch:
+      # Set the PATH matching policy to solve the high version SpringBoot boot Springfox Empty Pointer Anomaly problem,
+      # Specific See: https://blog.csdn.net/faint35799/Article/details/122344731
+      matching-strategy: ant_path_matcher
 eureka:
+  instance:
+    appname: user-identity
   client:
+    enabled: true
+    register-with-eureka: true
+    fetch-registry: true
     service-url:
       defaultZone: http://localhost:8761/eureka/

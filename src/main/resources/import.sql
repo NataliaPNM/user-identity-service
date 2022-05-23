@@ -1,7 +1,7 @@
 DELETE FROM Users;
 ALTER SEQUENCE user_generator RESTART;
-INSERT INTO Users (id, phone, name, surname, patronymic, email, role)VALUES (nextval('user_generator'), 89922098031, 'Natalia', 'Ponomareva', 'Aleksandrovna','ttnpnm@yandex.ru','ROLE_USER');
-INSERT INTO Users (id, phone, name, surname, patronymic, email, role)VALUES (nextval('user_generator'), 89638776250, 'Tatiana', 'Ponomareva', 'Victorovna','1111@yandex.ru', 'ROLE_USER');
+INSERT INTO Users (id, phone, name, surname, patronymic, email, role)VALUES (nextval('user_generator'), 79922098031, 'Natalia', 'Ponomareva', 'Aleksandrovna','mihant91@gmail.com','ROLE_USER');
+INSERT INTO Users (id, phone, name, surname, patronymic, email, role)VALUES (nextval('user_generator'), 79638776250, 'Tatiana', 'Ponomareva', 'Victorovna','1111@yandex.ru', 'ROLE_USER');
 
 DELETE FROM secure_data;
 ALTER SEQUENCE secure_generator RESTART;

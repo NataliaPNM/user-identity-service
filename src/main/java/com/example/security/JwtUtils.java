@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
@@ -40,12 +39,7 @@ public class JwtUtils {
 
     public String generateJwtToken(String login) {
         secureRepository.findByLogin(login).orElseThrow(RuntimeException::new);
-        return Jwts.builder()
-                .setSubject(login)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
-                .compact();
+        return Jwts.builder().setSubject(login).setIssuedAt(new Date()).setExpiration(new Date((new Date()).getTime() + jwtExpirationMs)).signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
     }
 
     public String generateRefreshToken(Authentication authentication) {
@@ -54,12 +48,7 @@ public class JwtUtils {
     }
 
     public String generateRefreshToken(String login) {
-        return Jwts.builder()
-                .setSubject(login)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtRefreshExpirationMs))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
-                .compact();
+        return Jwts.builder().setSubject(login).setIssuedAt(new Date()).setExpiration(new Date((new Date()).getTime() + jwtRefreshExpirationMs)).signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
     }
 
     public String getLoginFromJwtToken(String token) {
@@ -81,7 +70,6 @@ public class JwtUtils {
         } catch (IllegalArgumentException e) {
             logger.error("JWT claims string is empty: {}", e.getMessage());
         }
-
         return false;
     }
 
@@ -96,6 +84,4 @@ public class JwtUtils {
         }
         return null;
     }
-
-
 }

@@ -1,6 +1,7 @@
 package com.example.service;
 
-import com.example.dto.UserDto;
+import com.example.dto.UserContactsDto;
+import com.example.mapper.UserContactsDtoMapper;
 import com.example.model.User;
 import com.example.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +11,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final UserContactsDtoMapper userContactsDtoMapper;
 
-    public UserDto sendResult(Long userId) {
-        User user= userRepository.getById(userId);
-
-        return UserDto.builder().id(userId).email(user.getEmail()).phone(user.getPhone()).build();
+    public UserContactsDto sendResult(Long userId) {
+        User user = userRepository.getById(userId);
+        return userContactsDtoMapper.toUserContactsDto(userId, user.getEmail(), user.getPhone());
     }
 }

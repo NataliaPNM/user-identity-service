@@ -5,8 +5,9 @@ import lombok.Data;
 import javax.validation.constraints.NotBlank;
 
 @Data
-public class ChangePasswordRequest {
+public class RequestNewTokensDto {
 
     @NotBlank
-    private String newPassword;
+    private String refreshToken;
+
 }

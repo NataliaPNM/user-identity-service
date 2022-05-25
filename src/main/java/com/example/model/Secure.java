@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -22,18 +23,17 @@ import javax.persistence.OneToOne;
 @AllArgsConstructor
 public class Secure {
 
-        @Id
-        @EqualsAndHashCode.Exclude
-        @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "secure_generator")
-        @SequenceGenerator(allocationSize = 1, name = "secure_generator")
-        private Long id;
+    @Id
+    @EqualsAndHashCode.Exclude
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "secure_generator")
+    @SequenceGenerator(allocationSize = 1, name = "secure_generator")
+    private Long id;
 
+    private String refreshToken;
+    private String login;
+    private String password;
 
-        private String login;
-
-        private String password;
-
-        @OneToOne
-        @JoinColumn(name = "user_id")
-        private User user;
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }

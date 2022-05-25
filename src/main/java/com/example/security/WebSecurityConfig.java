@@ -12,14 +12,12 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private AuthEntryPointJwt authEntryPointJwt;
     @Autowired
@@ -35,7 +33,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
         auth.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
     }
 
-
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
@@ -49,22 +46,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .authorizeRequests()
+                .authorizeRequests().antMatchers("/auth/secure")
+                .authenticated()
                 .antMatchers(
-                        "/auth/**",
-                        "/v2/api-docs",
-                        "/v2/api-docs/**",
-                        "/swagger-ui/",
-                        "/service/user-identity/",
-                        "/service/user-identity/**",
+                        "/auth/signin",
+                        "/auth/refresh",
+                        "/auth/validateToken",
+                        "/v3/api-docs/**",
+                        "/v3/api-docs",
                         "/swagger-ui/**",
-                        "/api/v2/api-docs/swagger-config#/",
                         "/configuration/ui",
                         "/swagger-resources/**",
                         "/configuration/security",
                         "/swagger-ui.html"
-                ).permitAll()
-                .anyRequest().authenticated();
+                ).permitAll().anyRequest().permitAll();
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 }

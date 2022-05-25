@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface SecureRepository extends JpaRepository<Secure,Long> {
     Optional<Secure> findByLogin(String login);
+    Optional<Secure> findByRefreshToken(String refreshToken);
 }

@@ -16,8 +16,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -43,33 +41,28 @@ public class AuthService {
 
     public LoginResponseDto refreshJwt(RequestNewTokensDto authHeader) {
         String token = authHeader.getRefreshToken();
-        Optional<Secure> result = secureRepository.findByRefreshToken(token);
-        if (result.isPresent()) {
-            Secure secureData = result.get();
-            if (secureData.getRefreshToken() == null) {
-                throw new AuthenticationServiceException("Auth failed! Not found such user");
-            }
-            if (!jwtUtils.validateJwtToken(token)) {
-                throw new AuthenticationServiceException("Auth failed");
-            }
-            String login = jwtUtils.getLoginFromJwtToken(token);
-            String accessToken = jwtUtils.generateJwtToken(login);
-            String refreshToken = jwtUtils.generateRefreshToken(login);
+        Secure secureData = secureRepository.findByRefreshToken(token)
+                .orElseThrow(() -> new AuthenticationServiceException("Auth failed! Not found such user"));
 
-            secureData.setRefreshToken(refreshToken);
-            secureRepository.save(secureData);
-            return loginResponseMapper.toLoginResponseDto(accessToken, refreshToken);
+        if (!jwtUtils.validateJwtToken(token)) {
+            throw new AuthenticationServiceException("Auth failed");
         }
-        return loginResponseMapper.toLoginResponseDto(null, null);
+        String login = jwtUtils.getLoginFromJwtToken(token);
+        String accessToken = jwtUtils.generateJwtToken(login);
+        String refreshToken = jwtUtils.generateRefreshToken(login);
+
+        secureData.setRefreshToken(refreshToken);
+        secureRepository.save(secureData);
+
+        return loginResponseMapper.toLoginResponseDto(accessToken, refreshToken);
     }
 
     public String changePassword(ChangePasswordRequest changePasswordRequest, Long userId) {
-        Optional<Secure> secureData = secureRepository.findById(userId);
-        if (secureData.isPresent()) {
-            Secure secure = secureData.get();
-            secure.setPassword(new BCryptPasswordEncoder().encode(changePasswordRequest.getNewPassword()));
-            secureRepository.save(secure);
-        }
+        Secure secureData = secureRepository.findById(userId)
+                .orElseThrow(() -> new AuthenticationServiceException("Auth failed! Not found such user"));
+        secureData.setPassword(new BCryptPasswordEncoder().encode(changePasswordRequest.getNewPassword()));
+        secureRepository.save(secureData);
+
         return "Password changed!";
     }
 }

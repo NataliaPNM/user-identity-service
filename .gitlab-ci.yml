@@ -44,7 +44,7 @@ test:
 # For `master` branch run `mvn deploy` automatically.
 build:
   stage: build
-  image: maven:3.8-jdk-11
+  image: maven:3-openjdk-17
   script:
     - 'mvn $MAVEN_CLI_OPTS package'
   only:

@@ -5,7 +5,7 @@ services:
     ports:
       - 8090:8090
     environment:
-       SPRING_DATASOURCE_URL: 'jdbc:postgresql://psql-db:5432/auth-service'
+       SPRING_DATASOURCE_URL: 'jdbc:postgresql://psql-db:5432/auth_service_db'
        SPRINT_DATASOURCE_USER: ${PSQL_USER} 
        SPRING_DATASOURCE_PASSWORD: ${PSQL_PASSWORD}
        EUREKA_CLIENT_SERICE-URL_DEFAULTZONE: http://discovery-service:8761/eureka/

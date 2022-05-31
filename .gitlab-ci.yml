@@ -49,7 +49,7 @@ build:
     - 'mvn $MAVEN_CLI_OPTS package'
   only:
     variables:
-      - $CI_COMMIT_BRANCH == 'develop'
+      - $CI_COMMIT_BRANCH == 'developer'
   artifacts:
     paths:
       - ./target

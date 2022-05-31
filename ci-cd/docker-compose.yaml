@@ -1,6 +1,6 @@
 version: '3.7'
 services:
-  account-service:
+  user-identity-service:
     image: $DOCKER_REGISTRY_NAME/$PROJECT_NAME:dev
     ports:
       - 8090:8090

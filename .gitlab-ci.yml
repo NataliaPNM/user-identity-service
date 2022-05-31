@@ -23,7 +23,7 @@ cache:
 test:
 # TODO: add sonarqube check in test stage
   stage: test
-  image: maven:3.8-jdk-11
+  image: maven:3-openjdk-17
   script:
     - 'mvn $MAVEN_CLI_OPTS test'
   artifacts:

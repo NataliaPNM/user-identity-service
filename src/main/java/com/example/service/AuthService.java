@@ -5,64 +5,72 @@ import com.example.dto.LoginRequest;
 import com.example.dto.LoginResponseDto;
 import com.example.dto.RequestNewTokensDto;
 import com.example.mapper.LoginResponseMapper;
-import com.example.model.Secure;
-import com.example.repository.SecureRepository;
+import com.example.repository.CredentialsRepository;
 import com.example.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+  private final PasswordEncoder passwordEncoder;
+  private final AuthenticationManager authenticationManager;
+  private final JwtUtils jwtUtils;
+  private final CredentialsRepository credentialsRepository;
+  private final LoginResponseMapper loginResponseMapper;
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtils jwtUtils;
-    private final SecureRepository secureRepository;
-    private final LoginResponseMapper loginResponseMapper;
+  public LoginResponseDto login(LoginRequest loginRequest) {
+    Authentication authentication =
+        authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                loginRequest.getLogin(), loginRequest.getPassword()));
 
-    public LoginResponseDto login(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getLogin(), loginRequest.getPassword()));
+    String jwt = jwtUtils.generateJwtToken(authentication);
+    String refreshJwt = jwtUtils.generateRefreshToken(authentication);
+    credentialsRepository
+        .findByLogin(loginRequest.getLogin())
+        .ifPresent(
+            credentials -> {
+              credentials.setRefreshToken(refreshJwt);
+              credentialsRepository.save(credentials);
+            });
+    return loginResponseMapper.toLoginResponseDto(jwt, refreshJwt);
+  }
 
-        String jwt = jwtUtils.generateJwtToken(authentication);
-        String refreshJwt = jwtUtils.generateRefreshToken(authentication);
-        secureRepository.findByLogin(loginRequest.getLogin()).ifPresent(secure -> {
-                    secure.setRefreshToken(refreshJwt);
-                    secureRepository.save(secure);
-                }
-        );
-        return loginResponseMapper.toLoginResponseDto(jwt, refreshJwt);
+  public LoginResponseDto refreshJwt(RequestNewTokensDto authHeader) {
+    var token = authHeader.getRefreshToken();
+    var credentials =
+        credentialsRepository
+            .findByRefreshToken(token)
+            .orElseThrow(
+                () -> new AuthenticationServiceException("Auth failed! Not found such user"));
+
+    if (!jwtUtils.validateJwtToken(token)) {
+      throw new AuthenticationServiceException("Auth failed");
     }
+    String login = jwtUtils.getLoginFromJwtToken(token);
+    String accessToken = jwtUtils.generateJwtToken(login);
+    String refreshToken = jwtUtils.generateRefreshToken(login);
 
-    public LoginResponseDto refreshJwt(RequestNewTokensDto authHeader) {
-        String token = authHeader.getRefreshToken();
-        Secure secureData = secureRepository.findByRefreshToken(token)
-                .orElseThrow(() -> new AuthenticationServiceException("Auth failed! Not found such user"));
+    credentials.setRefreshToken(refreshToken);
+    credentialsRepository.save(credentials);
 
-        if (!jwtUtils.validateJwtToken(token)) {
-            throw new AuthenticationServiceException("Auth failed");
-        }
-        String login = jwtUtils.getLoginFromJwtToken(token);
-        String accessToken = jwtUtils.generateJwtToken(login);
-        String refreshToken = jwtUtils.generateRefreshToken(login);
+    return loginResponseMapper.toLoginResponseDto(accessToken, refreshToken);
+  }
 
-        secureData.setRefreshToken(refreshToken);
-        secureRepository.save(secureData);
-
-        return loginResponseMapper.toLoginResponseDto(accessToken, refreshToken);
-    }
-
-    public String changePassword(ChangePasswordRequest changePasswordRequest, Long userId) {
-        Secure secureData = secureRepository.findById(userId)
-                .orElseThrow(() -> new AuthenticationServiceException("Auth failed! Not found such user"));
-        secureData.setPassword(new BCryptPasswordEncoder().encode(changePasswordRequest.getNewPassword()));
-        secureRepository.save(secureData);
-
-        return "Password changed!";
-    }
+  public String changePassword(ChangePasswordRequest changePasswordRequest, UUID personId) {
+    var credentials = credentialsRepository.findById(personId);
+    credentials.ifPresent(
+        credentials1 -> {
+          credentials1.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+          credentialsRepository.save(credentials1);
+        });
+    return "Password changed!";
+  }
 }

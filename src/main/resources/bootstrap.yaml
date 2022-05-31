@@ -1,23 +1,16 @@
 spring:
-application:
-  name: user-identity
-cloud:
-  config:
-    uri: http://localhost:8888
-    user: user-identity
-    password: a1s21a2s
-    #если доступ к удаленному конфиг файлу будет недоступен - будет брошено ConfigClientFailFastException
-    fail-fast: true
+  application:
+    name: user-identity
+  cloud:
+    config:
+      enabled: true
+      uri: http://10.10.14.29:8087
+      username: user-identity
+      password: a1s21a2s
+      fail-fast: true
 
 management:
   endpoints:
     web:
     exposure:
       include: refresh
-
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka/

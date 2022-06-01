@@ -1,0 +1,100 @@
+stages:
+    - build
+    - build-docker
+    - test
+    - deploy
+
+variables:
+  PROJECT_NAME: "meetroom-mobile-user-identity"
+  # This will suppress any download for dependencies and plugins or upload messages which would clutter the console log.
+  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
+  MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+  # As of Maven 3.3.0 instead of this you may define these options in `.mvn/maven.config` so the same config is used
+  # when running from the command line.
+  # `installAtEnd` and `deployAtEnd` are only effective with recent version of the corresponding plugins.
+  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
+
+# Cache downloaded dependencies and plugins between builds.
+# To keep cache across branches add 'key: "$CI_JOB_NAME"'
+cache:
+  paths:
+    - .m2/repository
+
+test:
+# TODO: add sonarqube check in test stage
+  stage: test
+  image: maven:3-openjdk-17
+  script:
+    - 'mvn $MAVEN_CLI_OPTS test'
+  artifacts:
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+        - target/failsafe-reports/TEST-*.xml
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  tags:
+  - "backend"
+  - "docker"
+
+
+# To deploy packages from CI, create a ci_settings.xml file
+# For deploying packages to GitLab's Maven Repository: See https://docs.gitlab.com/ee/user/packages/maven_repository/index.html#create-maven-packages-with-gitlab-cicd for more details.
+# Please note: The GitLab Maven Repository is currently only available in GitLab Premium / Ultimate.
+# For `master` branch run `mvn deploy` automatically.
+build:
+  stage: build
+  image: maven:3-openjdk-17
+  script:
+    - 'mvn $MAVEN_CLI_OPTS package'
+  only:
+    variables:
+      - $CI_COMMIT_BRANCH == 'developer'
+  artifacts:
+    paths:
+      - ./target
+    expire_in: 1 week
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+        - target/failsafe-reports/TEST-*.xml
+  tags:
+    - "backend"
+    - "docker"
+
+build-docker:
+  stage: build-docker
+  image: docker:20.10.16-dind
+  before_script:
+    - echo "$DOCKER_REGISTRY_RW_PASS" | docker login "$DOCKER_REGISTRY_URL" --username $DOCKER_REGISTRY_RW_USER --password-stdin
+  script:
+    - docker build --tag $DOCKER_REGISTRY_NAME/$PROJECT_NAME:dev -f ci-cd/Dockerfile .
+    - docker push $DOCKER_REGISTRY_NAME/$PROJECT_NAME:dev
+  only:
+    variables:
+      - $CI_COMMIT_BRANCH == 'developer'
+  dependencies:
+    - build
+  tags:
+    - "backend"
+    - "docker"
+
+deploy:
+  stage: deploy
+  before_script:
+  - echo "$DOCKER_REGISTRY_RO_PASS" | docker login "$DOCKER_REGISTRY_URL" --username $DOCKER_REGISTRY_RO_USER --password-stdin
+  script:
+    - docker-compose -f ci-cd/docker-compose.yaml -p ${PROJECT_NAME} up -d --remove-orphans --build
+  only:
+    variables:
+      - $CI_COMMIT_BRANCH == 'developer'
+  dependencies:
+    - build
+    - build-docker
+  environment:
+    name: develop
+    url: http://10.10.14.29:8090
+
+  tags:
+    - "backend"
+    - "shell"

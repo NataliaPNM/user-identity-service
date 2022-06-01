@@ -1,0 +1,21 @@
+version: '3.7'
+services:
+  user-identity-service:
+    image: $DOCKER_REGISTRY_NAME/$PROJECT_NAME:dev
+    ports:
+      - 8090:8090
+    environment:
+       SPRING_DATASOURCE_URL: 'jdbc:postgresql://psql-db:5432/auth_service_db'
+       SPRINT_DATASOURCE_USER: ${PSQL_USER} 
+       SPRING_DATASOURCE_PASSWORD: ${PSQL_PASSWORD}
+       eureka.client.service-url.defaultZone: http://discovery-service:8761/eureka/
+    restart: always
+    logging:
+      driver: loki
+      options:
+        loki-url: http://127.0.0.1:3100/loki/api/v1/push
+
+networks:
+  default:
+    external:
+      name: meetroom-microservices

@@ -1,8 +1,7 @@
 package com.example.security;
 
 import lombok.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,33 +15,44 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@Slf4j
 public class AuthTokenFilter extends OncePerRequestFilter {
-    @Autowired
-    private JwtUtils jwtUtils;
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+  private JwtUtils jwtUtils;
+  private UserDetailsServiceImpl userDetailsService;
 
-    private static final Logger loggerSlf4j = LoggerFactory.getLogger(AuthTokenFilter.class);
+  @Autowired
+  public void setJwtUtils(JwtUtils jwtUtils) {
+    this.jwtUtils = jwtUtils;
+  }
 
-    @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,@NonNull FilterChain filterChain)
-            throws ServletException, IOException {
+  @Autowired
+  public void setUserDetailsService(UserDetailsServiceImpl userDetailsService) {
+    this.userDetailsService = userDetailsService;
+  }
 
-        try {
-            String jwt = jwtUtils.parseJwt(request);
-            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-                String login = jwtUtils.getLoginFromJwtToken(jwt);
+  @Override
+  protected void doFilterInternal(
+      @NonNull HttpServletRequest request,
+      @NonNull HttpServletResponse response,
+      @NonNull FilterChain filterChain)
+      throws ServletException, IOException {
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(login);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-                        userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+    try {
+      String jwt = jwtUtils.parseJwt(request);
+      if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+        String login = jwtUtils.getLoginFromJwtToken(jwt);
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
-        } catch (Exception e) {
-            loggerSlf4j.error("Cannot set user authentication: {0}", e);
-        }
-        filterChain.doFilter(request, response);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(login);
+        UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+      }
+    } catch (Exception e) {
+      log.error("Cannot set user authentication: ", e);
     }
+    filterChain.doFilter(request, response);
+  }
 }

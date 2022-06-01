@@ -3,11 +3,13 @@ package com.example.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import java.util.UUID;
 
 @Data
 @Builder
 @AllArgsConstructor
-public class LoginResponseDto {
-  private String token;
-  private String refreshToken;
+public class PersonContactsDto {
+  private UUID id;
+  private String email;
+  private Long phone;
 }

@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: user-identity
+  cloud:
+    config:
+      enabled: true
+      uri: http://10.10.14.29:8087
+      username: user-identity
+      password: a1s21a2s
+      fail-fast: true
+
+management:
+  endpoints:
+    web:
+    exposure:
+      include: refresh

@@ -16,6 +16,7 @@ import static com.example.Fixtures.*;
 import static com.example.Fixtures.getUUID;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,13 +31,15 @@ public class PersonControllerIntegrationTest {
   @Autowired private MockMvc mockMvc;
 
   @Test
-  public void signInStatusOkTest() throws Exception {
-    when(personService.sendResult(getUUID())).thenReturn(getPersonContactsDto1());
+  public void sendResultStatusOkTest() throws Exception {
+    when(personService.sendResult(getPersonContactsRequestDto1())).thenReturn(getPersonContactsDto1());
     mockMvc
         .perform(
-            get("/user/contact")
-                .param("personId", getUUID().toString())
-                .accept(MediaType.APPLICATION_JSON))
+            post("/user/contact")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(mapper.writeValueAsString(getPersonContactsRequestDto1()))
+                    .characterEncoding("utf-8")
+                    .accept(MediaType.APPLICATION_JSON))
         .andDo(print())
         .andExpect(status().isOk())
         .andExpect(content().json(mapper.writeValueAsString(getPersonContactsDto1())));

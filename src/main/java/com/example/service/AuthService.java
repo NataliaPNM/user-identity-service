@@ -30,7 +30,6 @@ public class AuthService {
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 loginRequest.getLogin(), loginRequest.getPassword()));
-
     String jwt = jwtUtils.generateJwtToken(authentication);
     String refreshJwt = jwtUtils.generateRefreshToken(authentication);
     credentialsRepository
@@ -65,12 +64,14 @@ public class AuthService {
   }
 
   public String changePassword(ChangePasswordRequest changePasswordRequest, UUID personId) {
-    var credentials = credentialsRepository.findById(personId);
-    credentials.ifPresent(
-        credentials1 -> {
-          credentials1.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
-          credentialsRepository.save(credentials1);
-        });
-    return "Password changed!";
+    var credentials = credentialsRepository.findByPersonId(personId);
+    if (credentials.isPresent()) {
+      var changedCredentials = credentials.get();
+      changedCredentials.setPassword(
+          passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+      credentialsRepository.save(changedCredentials);
+      return "Password changed!";
+    }
+    return "Password change failed!";
   }
 }

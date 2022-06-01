@@ -1,6 +1,7 @@
 package com.example.service;
 
 import com.example.dto.PersonContactsDto;
+import com.example.dto.PersonContactsRequestDto;
 import com.example.mapper.PersonContactsDtoMapper;
 import com.example.repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +15,9 @@ public class PersonService {
   private final PersonRepository personRepository;
   private final PersonContactsDtoMapper personContactsDtoMapper;
 
-  public PersonContactsDto sendResult(UUID personId) {
-    var person = personRepository.getById(personId);
+  public PersonContactsDto sendResult(PersonContactsRequestDto requestDto) {
+    var person = personRepository.getById(UUID.fromString(requestDto.getPersonId()));
     return personContactsDtoMapper.toPersonContactsDto(
-        personId, person.getEmail(), person.getPhone());
+            UUID.fromString(requestDto.getPersonId()), person.getEmail(), person.getPhone());
   }
 }

@@ -66,7 +66,7 @@ public class AuthServiceTest {
 
   @Test
   void changePasswordTest() {
-    when(credentialsRepository.findById(getUUID()))
+    when(credentialsRepository.findByPersonId(getUUID()))
         .thenReturn(Optional.ofNullable(getCredentials3()));
     when(passwordEncoder.encode(getChangePasswordRequest().getNewPassword()))
         .thenReturn("encodedPassword");

@@ -1,15 +1,12 @@
 package com.example.controller;
 
 import com.example.dto.PersonContactsDto;
+import com.example.dto.PersonContactsRequestDto;
 import com.example.service.PersonService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -26,8 +23,8 @@ public class PersonController {
       summary = "Получение контактов пользователя",
       description =
           "Данный ендпоинт нужен для общения с другим микросервисом через веб-клиент, возможно будет удалён")
-  @GetMapping("/contact")
-  public PersonContactsDto getPerson(@RequestParam UUID personId) {
+  @PostMapping("/contact")
+  public PersonContactsDto getPerson(@RequestBody PersonContactsRequestDto personId) {
     return personService.sendResult(personId);
   }
 }

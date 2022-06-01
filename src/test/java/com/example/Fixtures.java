@@ -30,6 +30,11 @@ public class Fixtures {
   public static String getToken1() {
     return "ttt";
   }
+  public static PersonContactsRequestDto getPersonContactsRequestDto1() {
+    PersonContactsRequestDto personContactsRequestDto = new PersonContactsRequestDto();
+    personContactsRequestDto.setPersonId(getUUID().toString());
+    return personContactsRequestDto;
+  }
 
   public static String getChangePasswordResult() {
     return "Password changed!";

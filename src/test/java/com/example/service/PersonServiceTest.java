@@ -30,7 +30,7 @@ public class PersonServiceTest {
             getUUID(), getPerson().getEmail(), getPerson().getPhone()))
         .thenReturn(getPersonContactsDto1());
 
-    PersonContactsDto actualResult = personService.sendResult(getUUID());
+    PersonContactsDto actualResult = personService.sendResult(getPersonContactsRequestDto1());
     assertEquals(expectedResult, actualResult);
   }
 }

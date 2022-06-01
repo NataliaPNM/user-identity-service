@@ -31,7 +31,7 @@ public class PersonControllerIntegrationTest {
 
   @Test
   public void signInStatusOkTest() throws Exception {
-    when(personService.sendResult(getUUID())).thenReturn(getPersonContactsDto1());
+    when(personService.sendResult(getPersonContactsRequestDto1())).thenReturn(getPersonContactsDto1());
     mockMvc
         .perform(
             get("/user/contact")

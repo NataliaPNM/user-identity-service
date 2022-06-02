@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+import static com.google.common.net.HttpHeaders.AUTHORIZATION;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/auth")
@@ -60,7 +62,8 @@ public class AuthController {
       summary = "Валидация токена",
       description = "Данный ендпоинт используется api-gateway для проверки валидности токенов")
   @PostMapping("/validateToken")
-  public Boolean getResult(@RequestParam String token) {
-    return jwtUtils.validateJwtToken(token);
+  public Boolean getResult(@RequestHeader(AUTHORIZATION) String token) {
+    var header = token.split(" ");
+    return jwtUtils.validateJwtToken(header[1]);
   }
 }

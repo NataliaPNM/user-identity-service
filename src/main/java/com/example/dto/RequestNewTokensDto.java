@@ -1,17 +1,17 @@
 package com.example.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 import javax.validation.constraints.NotBlank;
 
 @Data
-@SuperBuilder
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginRequest {
-  @NotBlank private String login;
-  @NotBlank private String password;
+public class RequestNewTokensDto {
+
+  @NotBlank private String refreshToken;
 }

@@ -3,7 +3,7 @@ services:
   user-identity-service:
     image: $DOCKER_REGISTRY_NAME/$PROJECT_NAME:dev
     ports:
-      - 8090:8090
+      - 9090:9090
     environment:
        SPRING_DATASOURCE_URL: 'jdbc:postgresql://psql-db:5432/auth_service_db'
        SPRINT_DATASOURCE_USER: ${PSQL_USER} 

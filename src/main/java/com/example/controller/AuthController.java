@@ -10,10 +10,8 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
-
-import static org.apache.http.HttpHeaders.AUTHORIZATION;
+import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -65,5 +63,4 @@ public class AuthController {
     var header = token.split(" ");
     return jwtUtils.validateJwtToken(header[1]);
   }
-
 }

@@ -95,13 +95,13 @@ public class AuthControllerIntegrationTest {
   @Test
   public void validateTokenStatusOkTest() throws Exception {
     boolean expectedResult = true;
-    when(jwtUtils.validateJwtToken("tokenValue")).thenReturn(expectedResult);
+    when(jwtUtils.validateJwtToken("token")).thenReturn(expectedResult);
     mockMvc
         .perform(
-            post("/auth/validateToken")
-                .param("token", "tokenValue")
+            post("/auth/validateToken").header("Authorization","Bearer token")
+                .param("token", "Bearer token")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString("tokenValue"))
+                .content(mapper.writeValueAsString("Bearer token"))
                 .characterEncoding("utf-8")
                 .accept(MediaType.APPLICATION_JSON))
         .andDo(print())

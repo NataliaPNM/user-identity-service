@@ -6,8 +6,10 @@ import com.example.dto.LoginResponseDto;
 import com.example.dto.RequestNewTokensDto;
 import com.example.mapper.LoginResponseMapper;
 import com.example.repository.CredentialsRepository;
+import com.example.security.AuthEntryPointJwt;
 import com.example.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,17 +21,25 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+  @Value("${jwtExpirationMs}")
+  private int jwtExpirationMs;
+
+  @Value("${jwtRefreshExpirationMs}")
+  private int jwtRefreshExpirationMs;
+
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
   private final JwtUtils jwtUtils;
   private final CredentialsRepository credentialsRepository;
   private final LoginResponseMapper loginResponseMapper;
-
+  private final AuthEntryPointJwt authEntryPointJwt;
   public LoginResponseDto login(LoginRequest loginRequest) {
+
     Authentication authentication =
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 loginRequest.getLogin(), loginRequest.getPassword()));
+
     String jwt = jwtUtils.generateJwtToken(authentication);
     String refreshJwt = jwtUtils.generateRefreshToken(authentication);
     credentialsRepository
@@ -39,7 +49,10 @@ public class AuthService {
               credentials.setRefreshToken(refreshJwt);
               credentialsRepository.save(credentials);
             });
-    return loginResponseMapper.toLoginResponseDto(jwt, refreshJwt);
+    if(authEntryPointJwt.getIncorrectPasswordCounter()>0){
+      authEntryPointJwt.setIncorrectPasswordCounter(0);
+    }
+    return loginResponseMapper.toLoginResponseDto(jwt, refreshJwt,jwtExpirationMs,jwtRefreshExpirationMs);
   }
 
   public LoginResponseDto refreshJwt(RequestNewTokensDto authHeader) {
@@ -60,7 +73,7 @@ public class AuthService {
     credentials.setRefreshToken(refreshToken);
     credentialsRepository.save(credentials);
 
-    return loginResponseMapper.toLoginResponseDto(accessToken, refreshToken);
+    return loginResponseMapper.toLoginResponseDto(accessToken, refreshToken, jwtExpirationMs,jwtRefreshExpirationMs);
   }
 
   public String changePassword(ChangePasswordRequest changePasswordRequest, UUID personId) {

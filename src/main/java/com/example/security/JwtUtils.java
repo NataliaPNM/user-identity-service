@@ -34,7 +34,7 @@ public class JwtUtils {
   }
 
   public String generateJwtToken(String login) {
-    credentialsRepository.findByLogin(login).orElseThrow(RuntimeException::new);
+    //credentialsRepository.findByLogin(login).orElseThrow(RuntimeException::new);
     return Jwts.builder()
         .setSubject(login)
         .setIssuedAt(new Date())

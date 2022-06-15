@@ -18,6 +18,6 @@ public class PersonService {
   public PersonContactsDto sendResult(PersonContactsRequestDto requestDto) {
     var person = personRepository.getById(UUID.fromString(requestDto.getPersonId()));
     return personContactsDtoMapper.toPersonContactsDto(
-            UUID.fromString(requestDto.getPersonId()), person.getEmail(), person.getPhone());
+            UUID.fromString(requestDto.getPersonId()), person.getEmail());
   }
 }

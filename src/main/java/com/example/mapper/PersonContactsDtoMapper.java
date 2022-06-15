@@ -7,5 +7,5 @@ import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface PersonContactsDtoMapper {
-  PersonContactsDto toPersonContactsDto(UUID id, String email, Long phone);
+  PersonContactsDto toPersonContactsDto(UUID id, String email);
 }

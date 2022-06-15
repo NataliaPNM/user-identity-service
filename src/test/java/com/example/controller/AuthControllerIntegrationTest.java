@@ -1,7 +1,6 @@
 package com.example.controller;
 
 import com.example.AuthorizationServiceApplication;
-import com.example.controller.AuthController;
 import com.example.security.JwtPerson;
 import com.example.security.JwtUtils;
 import com.example.service.AuthService;
@@ -55,44 +54,54 @@ public class AuthControllerIntegrationTest {
 
   @Test
   public void signInStatusOkTest() throws Exception {
-    when(authService.login(getLoginRequest1())).thenReturn(getLoginResponseDto());
+    when(authService.login(getLoginRequest("postgres", "postgres")))
+        .thenReturn(getLoginResponseDto("eyJhbGciOiJI", "UCkErJNzC0rcAd", 0, 0));
     mockMvc
         .perform(
             post("/auth/signin")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(getLoginRequest1()))
+                .content(mapper.writeValueAsString(getLoginRequest("postgres", "postgres")))
                 .characterEncoding("utf-8")
                 .accept(MediaType.APPLICATION_JSON))
         .andDo(print())
         .andExpect(status().isOk())
-        .andExpect(content().json(mapper.writeValueAsString(getLoginResponseDto())));
+        .andExpect(
+            content()
+                .json(
+                    mapper.writeValueAsString(
+                        getLoginResponseDto("eyJhbGciOiJI", "UCkErJNzC0rcAd", 0, 0))));
   }
 
   @Test
   public void refreshTokenStatusOkTest() throws Exception {
-    when(authService.refreshJwt(getRequestNewTokensDto())).thenReturn(getLoginResponseDto2());
+    when(authService.refreshJwt(getRequestNewTokensDto("UCkErJNzC0rcAd")))
+        .thenReturn(getLoginResponseDto("XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0));
     mockMvc
         .perform(
             post("/auth/refresh")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(getRequestNewTokensDto()))
+                .content(mapper.writeValueAsString(getRequestNewTokensDto("UCkErJNzC0rcAd")))
                 .characterEncoding("utf-8")
                 .accept(MediaType.APPLICATION_JSON))
         .andDo(print())
         .andExpect(status().isOk())
-        .andExpect(content().json(mapper.writeValueAsString(getLoginResponseDto2())));
+        .andExpect(
+            content()
+                .json(
+                    mapper.writeValueAsString(
+                        getLoginResponseDto("XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0))));
   }
 
   @Test
   public void validateTokenStatusOkTest() throws Exception {
     boolean expectedResult = true;
-    when(jwtUtils.validateJwtToken(getToken1())).thenReturn(expectedResult);
+    when(jwtUtils.validateJwtToken("tokenValue")).thenReturn(expectedResult);
     mockMvc
         .perform(
             post("/auth/validateToken")
-                .param("token", getToken1())
+                .param("token", "tokenValue")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(getToken1()))
+                .content(mapper.writeValueAsString("tokenValue"))
                 .characterEncoding("utf-8")
                 .accept(MediaType.APPLICATION_JSON))
         .andDo(print())
@@ -103,13 +112,13 @@ public class AuthControllerIntegrationTest {
   @Test
   public void changePasswordStatusOkTest() throws Exception {
 
-    given(authService.changePassword(getChangePasswordRequest(), getUUID()))
+    given(authService.changePassword(getChangePasswordRequest("newPassword"), getUUID()))
         .willReturn(getChangePasswordResult());
     mockMvc
         .perform(
             post("/auth/secure")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(getChangePasswordRequest()))
+                .content(mapper.writeValueAsString(getChangePasswordRequest("newPassword")))
                 .characterEncoding("utf-8")
                 .accept(MediaType.APPLICATION_JSON))
         .andDo(print())
@@ -131,7 +140,8 @@ public class AuthControllerIntegrationTest {
             NativeWebRequest webRequest,
             WebDataBinderFactory binderFactory) {
           ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
-          return new JwtPerson(getUUID(), 89999999L, "test", "test", "login", "password", authorities);
+          return new JwtPerson(
+              getUUID(), 89999999L, "test", "test", "login", "password", authorities);
         }
       };
 }

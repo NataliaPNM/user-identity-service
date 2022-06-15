@@ -5,5 +5,9 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface LoginResponseMapper {
-  LoginResponseDto toLoginResponseDto(String token, String refreshToken);
+  LoginResponseDto toLoginResponseDto(
+      String token,
+      String refreshToken,
+      int accessTokenExpirationTime,
+      int refreshTokenExpirationTime);
 }

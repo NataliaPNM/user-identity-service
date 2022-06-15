@@ -55,6 +55,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .authenticated()
         .antMatchers(
             "/auth/signin",
+            "/user/contact",
             "/auth/refresh",
             "/auth/validateToken",
             "/v3/api-docs/**",

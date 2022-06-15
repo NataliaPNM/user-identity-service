@@ -57,6 +57,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             "/auth/signin",
             "/user/contact",
             "/auth/refresh",
+            "/user/contact",
             "/auth/validateToken",
             "/v3/api-docs/**",
             "/v3/api-docs",

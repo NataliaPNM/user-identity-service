@@ -4,6 +4,7 @@ import com.example.exception.NotFoundSuchUserException;
 import com.example.model.Credentials;
 import com.example.repository.CredentialsRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,19 +19,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
   private final CredentialsRepository credentialsRepository;
   private final AuthEntryPointJwt authEntryPointJwt;
 
+  @Value("${authLockTime}")
+  private int authLockTime;
+
   @Override
   @Transactional
   public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
     Credentials credentials =
-        credentialsRepository.findByLogin(login).orElseThrow(NotFoundSuchUserException::new);
+        credentialsRepository
+            .findByLogin(login)
+            .orElseThrow(() -> new NotFoundSuchUserException("Not found user with this login"));
     setAuthLock(credentials);
     String lockTime = credentials.getLockTime();
-    if (!lockTime.equals("")) {
-      if (LocalDateTime.now().isAfter(LocalDateTime.parse(lockTime))) {
-        credentials.setLock(false);
-        credentials.setLockTime("");
-        credentialsRepository.save(credentials);
-      }
+    if (!lockTime.equals("") && LocalDateTime.now().isAfter(LocalDateTime.parse(lockTime))) {
+      credentials.setLock(false);
+      credentials.setLockTime("");
+      credentialsRepository.save(credentials);
     }
     return JwtPerson.build(credentials.getPerson(), credentials);
   }
@@ -39,7 +43,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     if (authEntryPointJwt.getIncorrectPasswordCounter() == 5) {
       authEntryPointJwt.setIncorrectPasswordCounter(0);
       credentials.setLock(true);
-      credentials.setLockTime(LocalDateTime.now().plusMinutes(5L).toString());
+      credentials.setLockTime(LocalDateTime.now().plusMinutes(authLockTime).toString());
       credentialsRepository.save(credentials);
     }
   }

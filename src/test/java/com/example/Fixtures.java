@@ -4,6 +4,7 @@ import com.example.dto.*;
 import com.example.model.Credentials;
 import com.example.model.Person;
 
+import com.example.model.PersonRole;
 import org.springframework.security.core.Authentication;
 
 import java.util.UUID;
@@ -33,12 +34,21 @@ public class Fixtures {
   }
 
   public static Credentials getCredentials(
-      String uuid, String login, String password, String refreshToken) {
+      String uuid,
+      String login,
+      String password,
+      String refreshToken,
+      Person person,
+      Boolean lock,
+      String lockTime) {
     return Credentials.builder()
         .credentialsId(UUID.fromString(uuid))
         .login(login)
         .password(password)
         .refreshToken(refreshToken)
+        .person(person)
+        .lock(lock)
+        .lockTime(lockTime)
         .build();
   }
 
@@ -68,7 +78,26 @@ public class Fixtures {
     return ChangePasswordRequest.builder().newPassword(newPassword).build();
   }
 
-  public static Person getPerson() {
+  public static Person getPersonWithoutData() {
     return Person.builder().build();
+  }
+
+  public static Person getPerson(
+      Long phone,
+      String surname,
+      String name,
+      String personId,
+      String patronymic,
+      String email,
+      PersonRole role) {
+    return Person.builder()
+        .phone(phone)
+        .surname(surname)
+        .name(name)
+        .personId(UUID.fromString(personId))
+        .patronymic(patronymic)
+        .email(email)
+        .role(role)
+        .build();
   }
 }

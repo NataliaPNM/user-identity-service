@@ -29,7 +29,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         credentialsRepository
             .findByLogin(login)
             .orElseThrow(() -> new NotFoundSuchUserException("Not found user with this login"));
-    setAuthLock(credentials);
+    credentials = setAuthLock(credentials);
     String lockTime = credentials.getLockTime();
     if (!lockTime.equals("") && LocalDateTime.now().isAfter(LocalDateTime.parse(lockTime))) {
       credentials.setLock(false);
@@ -39,12 +39,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     return JwtPerson.build(credentials.getPerson(), credentials);
   }
 
-  public void setAuthLock(Credentials credentials) {
+  public Credentials setAuthLock(Credentials credentials) {
     if (authEntryPointJwt.getIncorrectPasswordCounter() == 5) {
       authEntryPointJwt.setIncorrectPasswordCounter(0);
       credentials.setLock(true);
       credentials.setLockTime(LocalDateTime.now().plusMinutes(authLockTime).toString());
-      credentialsRepository.save(credentials);
-    }
+      return credentialsRepository.save(credentials);
+    } else return credentials;
   }
 }

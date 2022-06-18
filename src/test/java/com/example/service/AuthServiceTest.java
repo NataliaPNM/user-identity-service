@@ -44,14 +44,32 @@ public class AuthServiceTest {
         .thenReturn(
             Optional.ofNullable(
                 getCredentials(
-                    "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454", "postgres", "postgres", "")));
+                    "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
+                    "postgres",
+                    "postgres",
+                    "",
+                    null,
+                    false,
+                    "")));
 
     when(credentialsRepository.save(
             getCredentials(
-                "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454", "postgres", "postgres", "UCkErJNzC0rcAd")))
+                "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
+                "postgres",
+                "postgres",
+                "UCkErJNzC0rcAd",
+                null,
+                false,
+                "")))
         .thenReturn(
             getCredentials(
-                "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454", "postgres", "postgres", "UCkErJNzC0rcAd"));
+                "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
+                "postgres",
+                "postgres",
+                "UCkErJNzC0rcAd",
+                null,
+                false,
+                ""));
     when(loginResponseMapper.toLoginResponseDto("eyJhbGciOiJI", "UCkErJNzC0rcAd", 0, 0))
         .thenReturn(expectedResult);
 
@@ -71,7 +89,10 @@ public class AuthServiceTest {
                     "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
                     "postgres",
                     "postgres",
-                    "UCkErJNzC0rcAd")));
+                    "UCkErJNzC0rcAd",
+                    null,
+                    false,
+                    "")));
     when(jwtUtils.validateJwtToken("UCkErJNzC0rcAd")).thenReturn(true);
     when(jwtUtils.getLoginFromJwtToken("UCkErJNzC0rcAd")).thenReturn("postgres");
     when(jwtUtils.generateJwtToken("postgres")).thenReturn("XOFsm1P2tSDo");
@@ -80,10 +101,22 @@ public class AuthServiceTest {
     when(jwtUtils.generateRefreshToken("postgres")).thenReturn("P3yzy8a91ixRrB");
     when(credentialsRepository.save(
             getCredentials(
-                "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454", "postgres", "postgres", "P3yzy8a91ixRrB")))
+                "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
+                "postgres",
+                "postgres",
+                "P3yzy8a91ixRrB",
+                null,
+                false,
+                "")))
         .thenReturn(
             getCredentials(
-                "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454", "postgres", "postgres", "P3yzy8a91ixRrB"));
+                "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
+                "postgres",
+                "postgres",
+                "P3yzy8a91ixRrB",
+                null,
+                false,
+                ""));
 
     LoginResponseDto actualResult =
         authService.refreshJwt(getRequestNewTokensDto("UCkErJNzC0rcAd"));
@@ -99,7 +132,10 @@ public class AuthServiceTest {
                     "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
                     "postgres",
                     "postgres",
-                    "P3yzy8a91ixRrB")));
+                    "P3yzy8a91ixRrB",
+                    null,
+                    false,
+                    "")));
     when(passwordEncoder.encode(getChangePasswordRequest("newPassword").getNewPassword()))
         .thenReturn("encodedPassword");
     when(credentialsRepository.save(
@@ -107,13 +143,19 @@ public class AuthServiceTest {
                 "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
                 "postgres",
                 "encodedPassword",
-                "P3yzy8a91ixRrB")))
+                "P3yzy8a91ixRrB",
+                null,
+                false,
+                "")))
         .thenReturn(
             getCredentials(
                 "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
                 "postgres",
                 "encodedPassword",
-                "P3yzy8a91ixRrB"));
+                "P3yzy8a91ixRrB",
+                null,
+                false,
+                ""));
 
     String actualResult =
         authService.changePassword(getChangePasswordRequest("newPassword"), getUUID());

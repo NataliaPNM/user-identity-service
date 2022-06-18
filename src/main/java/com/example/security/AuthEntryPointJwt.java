@@ -1,10 +1,10 @@
 package com.example.security;
 
-import com.example.repository.PersonRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -22,10 +22,12 @@ import java.util.Map;
 @Data
 @RequiredArgsConstructor
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
-  private final PersonRepository personRepository;
   private final ObjectMapper mapper;
   private LocalDateTime firstEntryTime;
   private int incorrectPasswordCounter = 0;
+
+  @Value("${authLockTime}")
+  private int authLockTime;
 
   @Override
   public void commence(
@@ -34,32 +36,35 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
       AuthenticationException authException)
       throws IOException {
     log.error("Unauthorized error: " + authException.getMessage());
-
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    mapper.writeValue(response.getOutputStream(), checkLock(request, authException.getMessage()));
+  }
+
+  public Map<String, Object> checkLock(HttpServletRequest request, String exceptionMessage) {
     final Map<String, Object> body = new HashMap<>();
     body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
-
-    if (authException.getMessage().equals("Bad credentials")) {
+    body.put("path", request.getServletPath());
+    body.put("error", "Unauthorized");
+    body.put("message", exceptionMessage);
+    if (exceptionMessage.equals("Bad credentials")) {
       incorrectPasswordCounter++;
+      body.put("countOfIncorrectEntry", incorrectPasswordCounter);
       if (incorrectPasswordCounter == 1) {
         firstEntryTime = LocalDateTime.now();
-      } else if (firstEntryTime.plusMinutes(5L).isBefore(LocalDateTime.now())) {
+      } else if (firstEntryTime.plusMinutes(authLockTime).isBefore(LocalDateTime.now())) {
         incorrectPasswordCounter = 1;
         firstEntryTime = LocalDateTime.now();
       }
+      if (incorrectPasswordCounter == 5) {
+        body.put("error", "Authorization blocked");
+        body.put("message", "You entered your password incorrectly 5 times");
+        body.put(
+            "timeToUnlock",
+            DateTimeFormatter.ofPattern("HH:mm")
+                .format(LocalDateTime.now().plusMinutes(authLockTime)));
+      }
     }
-    if (incorrectPasswordCounter == 5) {
-      body.put("error", "Authorization blocked");
-      body.put(
-          "message",
-          "Вы ввели неправильный пароль 5 раз за последние 5 минут. Доступ заблокирован до "
-              + DateTimeFormatter.ofPattern("HH:mm").format(LocalDateTime.now().plusMinutes(5L)));
-    } else {
-      body.put("error", "Unauthorized");
-      body.put("message", authException.getMessage());
-    }
-    body.put("path", request.getServletPath());
-    mapper.writeValue(response.getOutputStream(), body);
+    return body;
   }
 }

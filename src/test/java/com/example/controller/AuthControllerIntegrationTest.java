@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @SpringBootTest(classes = AuthorizationServiceApplication.class)
 @AutoConfigureMockMvc
 @ImportAutoConfiguration(RefreshAutoConfiguration.class)
-public class AuthControllerIntegrationTest {
+class AuthControllerIntegrationTest {
 
   @Autowired private AuthController authController;
   @MockBean private AuthService authService;
@@ -54,7 +54,7 @@ public class AuthControllerIntegrationTest {
   }
 
   @Test
-  public void signInStatusOkTest() throws Exception {
+  void signInStatusOkTest() throws Exception {
     when(authService.login(getLoginRequest("postgres", "postgres")))
         .thenReturn(getLoginResponseDto("eyJhbGciOiJI", "UCkErJNzC0rcAd", 0, 0));
     mockMvc
@@ -74,7 +74,7 @@ public class AuthControllerIntegrationTest {
   }
 
   @Test
-  public void refreshTokenStatusOkTest() throws Exception {
+  void refreshTokenStatusOkTest() throws Exception {
     when(authService.refreshJwt(getRequestNewTokensDto("UCkErJNzC0rcAd")))
         .thenReturn(getLoginResponseDto("XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0));
     mockMvc
@@ -94,7 +94,7 @@ public class AuthControllerIntegrationTest {
   }
 
   @Test
-  public void validateTokenStatusOkTest() throws Exception {
+  void validateTokenStatusOkTest() throws Exception {
     boolean expectedResult = true;
     when(jwtUtils.validateJwtToken("token")).thenReturn(expectedResult);
     mockMvc
@@ -111,7 +111,7 @@ public class AuthControllerIntegrationTest {
   }
 
   @Test
-  public void changePasswordStatusOkTest() throws Exception {
+  void changePasswordStatusOkTest() throws Exception {
 
     given(authService.changePassword(getChangePasswordRequest("newPassword"), getUUID()))
         .willReturn(getChangePasswordResult());

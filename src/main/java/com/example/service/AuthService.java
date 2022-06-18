@@ -33,6 +33,7 @@ public class AuthService {
   private final CredentialsRepository credentialsRepository;
   private final LoginResponseMapper loginResponseMapper;
   private final AuthEntryPointJwt authEntryPointJwt;
+
   public LoginResponseDto login(LoginRequest loginRequest) {
 
     Authentication authentication =
@@ -49,10 +50,11 @@ public class AuthService {
               credentials.setRefreshToken(refreshJwt);
               credentialsRepository.save(credentials);
             });
-    if(authEntryPointJwt.getIncorrectPasswordCounter()>0){
+    if (authEntryPointJwt.getIncorrectPasswordCounter() > 0) {
       authEntryPointJwt.setIncorrectPasswordCounter(0);
     }
-    return loginResponseMapper.toLoginResponseDto(jwt, refreshJwt,jwtExpirationMs,jwtRefreshExpirationMs);
+    return loginResponseMapper.toLoginResponseDto(
+        jwt, refreshJwt, jwtExpirationMs, jwtRefreshExpirationMs);
   }
 
   public LoginResponseDto refreshJwt(RequestNewTokensDto authHeader) {
@@ -73,7 +75,8 @@ public class AuthService {
     credentials.setRefreshToken(refreshToken);
     credentialsRepository.save(credentials);
 
-    return loginResponseMapper.toLoginResponseDto(accessToken, refreshToken, jwtExpirationMs,jwtRefreshExpirationMs);
+    return loginResponseMapper.toLoginResponseDto(
+        accessToken, refreshToken, jwtExpirationMs, jwtRefreshExpirationMs);
   }
 
   public String changePassword(ChangePasswordRequest changePasswordRequest, UUID personId) {

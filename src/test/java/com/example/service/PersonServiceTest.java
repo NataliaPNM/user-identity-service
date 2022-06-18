@@ -25,8 +25,8 @@ public class PersonServiceTest {
   void sendResultMethodReturnPersonContactsDtoTest() {
     PersonContactsDto expectedResult =
         getPersonContactsDto("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454", "tttn@yandex.ru");
-    when(personRepository.getById(getUUID())).thenReturn(getPerson());
-    when(personContactsDtoMapper.toPersonContactsDto(getUUID(), getPerson().getEmail()))
+    when(personRepository.getById(getUUID())).thenReturn(getPersonWithoutData());
+    when(personContactsDtoMapper.toPersonContactsDto(getUUID(), getPersonWithoutData().getEmail()))
         .thenReturn(getPersonContactsDto("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454", "tttn@yandex.ru"));
 
     PersonContactsDto actualResult =

@@ -11,5 +11,5 @@ import java.util.UUID;
 public class PersonContactsDto {
   private UUID id;
   private String email;
-  private Long phone;
+
 }

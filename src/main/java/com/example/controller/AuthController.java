@@ -10,9 +10,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
-
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -57,10 +55,9 @@ public class AuthController {
       @AuthenticationPrincipal JwtPerson person) {
     return authService.changePassword(changePasswordRequest, person.getId());
   }
-
   @Operation(
-      summary = "Валидация токена",
-      description = "Данный ендпоинт используется api-gateway для проверки валидности токенов")
+          summary = "Валидация токена",
+          description = "Данный ендпоинт используется api-gateway для проверки валидности токенов")
   @PostMapping("/validateToken")
   public Boolean getResult(@RequestHeader(AUTHORIZATION) String token) {
     var header = token.split(" ");

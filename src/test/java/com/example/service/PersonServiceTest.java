@@ -3,7 +3,6 @@ package com.example.service;
 import com.example.dto.PersonContactsDto;
 import com.example.mapper.PersonContactsDtoMapper;
 import com.example.repository.PersonRepository;
-import com.example.security.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,13 +23,15 @@ public class PersonServiceTest {
 
   @Test
   void sendResultMethodReturnPersonContactsDtoTest() {
-    PersonContactsDto expectedResult = getPersonContactsDto1();
-    when(personRepository.getById(getUUID())).thenReturn(getPerson());
-    when(personContactsDtoMapper.toPersonContactsDto(
-            getUUID(), getPerson().getEmail(), getPerson().getPhone()))
-        .thenReturn(getPersonContactsDto1());
+    PersonContactsDto expectedResult =
+        getPersonContactsDto("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454", "tttn@yandex.ru");
+    when(personRepository.getById(getUUID())).thenReturn(getPersonWithoutData());
+    when(personContactsDtoMapper.toPersonContactsDto(getUUID(), getPersonWithoutData().getEmail()))
+        .thenReturn(getPersonContactsDto("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454", "tttn@yandex.ru"));
 
-    PersonContactsDto actualResult = personService.sendResult(getPersonContactsRequestDto1());
+    PersonContactsDto actualResult =
+        personService.sendResult(
+            getPersonContactsRequestDto("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454"));
     assertEquals(expectedResult, actualResult);
   }
 }

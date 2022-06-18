@@ -10,4 +10,6 @@ import lombok.Data;
 public class LoginResponseDto {
   private String token;
   private String refreshToken;
+  private int accessTokenExpirationTime;
+  private int refreshTokenExpirationTime;
 }

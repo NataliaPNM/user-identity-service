@@ -20,6 +20,7 @@ public class JwtPerson implements UserDetails {
   private String surname;
   private String login;
   private String password;
+  private static boolean nonLocked;
   private Collection<? extends GrantedAuthority> authorities;
 
   public JwtPerson(
@@ -38,11 +39,10 @@ public class JwtPerson implements UserDetails {
     this.password = password;
     this.authorities = authorities;
   }
-
   public static JwtPerson build(Person person, Credentials credentials) {
     List<GrantedAuthority> authorities =
         List.of(new SimpleGrantedAuthority(person.getRole().name()));
-
+    nonLocked= !credentials.isLock();
     return new JwtPerson(
         person.getPersonId(),
         person.getPhone(),
@@ -65,7 +65,7 @@ public class JwtPerson implements UserDetails {
 
   @Override
   public boolean isAccountNonLocked() {
-    return true;
+    return nonLocked;
   }
 
   @Override

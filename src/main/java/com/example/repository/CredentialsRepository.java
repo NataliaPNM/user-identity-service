@@ -10,6 +10,7 @@ import java.util.UUID;
 
 @Repository
 public interface CredentialsRepository extends JpaRepository<Credentials, UUID> {
+  @Query("select c from Credentials c join fetch c.person where c.login =:login")
   Optional<Credentials> findByLogin(String login);
 
   @Query("select c from Credentials c  where c.person.personId =:person")

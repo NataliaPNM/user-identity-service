@@ -5,14 +5,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.engine.transaction.spi.JoinStatus;
+import org.hibernate.sql.JoinType;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import java.util.UUID;
 
 @Data
@@ -21,6 +19,9 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@NamedQuery(
+    name = "getConfirmationCode",
+    query = "select c from Credentials c join fetch c.person where c.login =:login")
 public class Credentials {
 
   @Id
@@ -32,7 +33,8 @@ public class Credentials {
   private String refreshToken;
   private String login;
   private String password;
-
+  private boolean lock;
+  private String lockTime;
   @OneToOne
   @JoinColumn(name = "person_id")
   private Person person;

@@ -19,9 +19,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
   private final CredentialsRepository credentialsRepository;
   private final AuthEntryPointJwt authEntryPointJwt;
 
-  @Value("${authLockTime}")
-  private int authLockTime;
-
   @Override
   @Transactional
   public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
@@ -43,7 +40,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     if (authEntryPointJwt.getIncorrectPasswordCounter() == 5) {
       authEntryPointJwt.setIncorrectPasswordCounter(0);
       credentials.setLock(true);
-      credentials.setLockTime(LocalDateTime.now().plusMinutes(authLockTime).toString());
+      credentials.setLockTime(LocalDateTime.now().plusMinutes(5L).toString());
       return credentialsRepository.save(credentials);
     } else return credentials;
   }

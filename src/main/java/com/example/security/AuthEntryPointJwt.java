@@ -26,9 +26,6 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
   private LocalDateTime firstEntryTime;
   private int incorrectPasswordCounter = 0;
 
-  @Value("${authLockTime}")
-  private int authLockTime;
-
   @Override
   public void commence(
       HttpServletRequest request,
@@ -52,7 +49,7 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
       body.put("countOfIncorrectEntry", incorrectPasswordCounter);
       if (incorrectPasswordCounter == 1) {
         firstEntryTime = LocalDateTime.now();
-      } else if (firstEntryTime.plusMinutes(authLockTime).isBefore(LocalDateTime.now())) {
+      } else if (firstEntryTime.plusMinutes(5L).isBefore(LocalDateTime.now())) {
         incorrectPasswordCounter = 1;
         firstEntryTime = LocalDateTime.now();
       }
@@ -62,7 +59,7 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
         body.put(
             "timeToUnlock",
             DateTimeFormatter.ofPattern("HH:mm")
-                .format(LocalDateTime.now().plusMinutes(authLockTime)));
+                .format(LocalDateTime.now().plusMinutes(5L)));
       }
     }
     return body;

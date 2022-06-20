@@ -19,11 +19,11 @@ public class JwtUtils {
   @Value("${jwtSecret}")
   private String jwtSecret;
 
-  @Value("${jwtExpirationMs}")
-  private int jwtExpirationMs;
+  //@Value("${jwtExpirationMs}")
+  private int jwtExpirationMs=960000;
 
-  @Value("${jwtRefreshExpirationMs}")
-  private int jwtRefreshExpirationMs;
+  //@Value("${jwtRefreshExpirationMs}")
+  private int jwtRefreshExpirationMs=1200000;
 
   private final CredentialsRepository credentialsRepository;
 

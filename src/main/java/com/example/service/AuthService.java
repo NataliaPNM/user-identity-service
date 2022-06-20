@@ -21,11 +21,11 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-  @Value("${jwtExpirationMs}")
-  private int jwtExpirationMs;
+  //@Value("${jwtExpirationMs}")
+  private int jwtExpirationMs=960000;
 
-  @Value("${jwtRefreshExpirationMs}")
-  private int jwtRefreshExpirationMs;
+  //@Value("${jwtRefreshExpirationMs}")
+  private int jwtRefreshExpirationMs=1200000;
 
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;

@@ -46,7 +46,7 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
     body.put("message", exceptionMessage);
     if (exceptionMessage.equals("Bad credentials")) {
       incorrectPasswordCounter++;
-      body.put("countOfIncorrectEntry", incorrectPasswordCounter);
+      body.put("remainingAttempts", 5 - incorrectPasswordCounter);
       if (incorrectPasswordCounter == 1) {
         firstEntryTime = LocalDateTime.now();
       } else if (firstEntryTime.plusMinutes(5L).isBefore(LocalDateTime.now())) {
@@ -61,6 +61,11 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
             DateTimeFormatter.ofPattern("HH:mm")
                 .format(LocalDateTime.now().plusMinutes(5L)));
       }
+    }else if(exceptionMessage.equals("Not found user with this login")){
+      body.put("status", 422);
+    }else if(exceptionMessage.equals("User account is locked")){
+      body.put("status", 423);
+      body.put("error", "Locked");
     }
     return body;
   }

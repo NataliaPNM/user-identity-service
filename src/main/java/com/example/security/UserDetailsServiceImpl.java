@@ -24,7 +24,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
   public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
     Credentials credentials =
         credentialsRepository
-            .findByLogin(login)
+            .findByLogin(login) //TODO: 422 status
             .orElseThrow(() -> new NotFoundSuchUserException("Not found user with this login"));
     credentials = setAuthLock(credentials);
     String lockTime = credentials.getLockTime();

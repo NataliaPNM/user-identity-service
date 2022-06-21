@@ -32,9 +32,16 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
       HttpServletResponse response,
       AuthenticationException authException)
       throws IOException {
+    int status = 401;
     log.error("Unauthorized error: " + authException.getMessage());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    if (authException.getMessage().equals("Not found user with this login")) {
+      status = 422;
+      }
+    if (authException.getMessage().equals("User account is locked")) {
+      status = 423;
+    }
+    response.setStatus(status);
     mapper.writeValue(response.getOutputStream(), checkLock(request, authException.getMessage()));
   }
 
@@ -58,12 +65,11 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
         body.put("message", "You entered your password incorrectly 5 times");
         body.put(
             "timeToUnlock",
-            DateTimeFormatter.ofPattern("HH:mm")
-                .format(LocalDateTime.now().plusMinutes(5L)));
+            DateTimeFormatter.ofPattern("HH:mm").format(LocalDateTime.now().plusMinutes(5L)));
       }
-    }else if(exceptionMessage.equals("Not found user with this login")){
+    } else if (exceptionMessage.equals("Not found user with this login")) {
       body.put("status", 422);
-    }else if(exceptionMessage.equals("User account is locked")){
+    } else if (exceptionMessage.equals("User account is locked")) {
       body.put("status", 423);
       body.put("error", "Locked");
     }

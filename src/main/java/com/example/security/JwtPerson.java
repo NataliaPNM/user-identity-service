@@ -39,10 +39,11 @@ public class JwtPerson implements UserDetails {
     this.password = password;
     this.authorities = authorities;
   }
+
   public static JwtPerson build(Person person, Credentials credentials) {
     List<GrantedAuthority> authorities =
         List.of(new SimpleGrantedAuthority(person.getRole().name()));
-    nonLocked= !credentials.isLock();
+    nonLocked = !credentials.isLock();
     return new JwtPerson(
         person.getPersonId(),
         person.getPhone(),

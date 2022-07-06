@@ -1,14 +1,7 @@
 package com.example.model;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.Fetch;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.engine.transaction.spi.JoinStatus;
-import org.hibernate.sql.JoinType;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -32,9 +25,13 @@ public class Credentials {
 
   private String refreshToken;
   private String login;
+  private boolean isAccountVerified;
+  private String temporaryPassword;
   private String password;
+
   private boolean lock;
   private String lockTime;
+
   @OneToOne
   @JoinColumn(name = "person_id")
   private Person person;

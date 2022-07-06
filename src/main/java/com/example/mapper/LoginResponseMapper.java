@@ -1,7 +1,9 @@
 package com.example.mapper;
 
-import com.example.dto.LoginResponseDto;
+import com.example.dto.response.LoginResponseDto;
 import org.mapstruct.Mapper;
+
+import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface LoginResponseMapper {
@@ -9,5 +11,6 @@ public interface LoginResponseMapper {
       String token,
       String refreshToken,
       int accessTokenExpirationTime,
-      int refreshTokenExpirationTime);
+      int refreshTokenExpirationTime,
+      UUID personId);
 }

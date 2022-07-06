@@ -1,18 +1,9 @@
 package com.example.model;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.UUID;
 
 @Data
@@ -37,6 +28,10 @@ public class Person {
   private String patronymic;
 
   private String email;
+
+  @OneToOne
+  @JoinColumn(name = "notification_settings_id")
+  private NotificationSettings notificationSettings;
 
   @Enumerated(EnumType.STRING)
   private PersonRole role;

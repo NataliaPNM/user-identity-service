@@ -32,9 +32,9 @@ class UserDetailsServiceImplTest {
       getPerson(
           123456L, "", "", "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454", "", "", PersonRole.ROLE_USER);
   Credentials credentials =
-      getCredentials("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454", "", "", "", person, false, "");
+      getCredentials("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454", "", "",true, "","", person, false, "");
   Credentials credentials2 =
-      getCredentials("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454", "", "", "", person, true, "");
+      getCredentials("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454", "", "",true, "","", person, true, "");
 
   @Test
   void lockPersonAfter5TimesIncorrectEntryTest() {

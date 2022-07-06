@@ -1,4 +1,4 @@
-package com.example.dto;
+package com.example.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,8 @@ import javax.validation.constraints.NotBlank;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestNewTokensDto {
+public class ChangePasswordRequest {
 
-  @NotBlank private String refreshToken;
+  @NotBlank private String newPassword;
+  @NotBlank private String personId;
 }

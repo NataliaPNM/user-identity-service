@@ -1,7 +1,11 @@
 package com.example.service;
 
-import com.example.dto.LoginResponseDto;
+import com.example.dto.response.ChangePasswordResponseDto;
+import com.example.dto.response.LoginResponseDto;
 import com.example.mapper.LoginResponseMapper;
+import com.example.model.Credentials;
+import com.example.model.Person;
+import com.example.model.PersonRole;
 import com.example.repository.CredentialsRepository;
 import com.example.security.AuthEntryPointJwt;
 import com.example.security.JwtUtils;
@@ -14,12 +18,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.example.Fixtures.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @Slf4j
@@ -31,34 +37,48 @@ public class AuthServiceTest {
   @Mock private LoginResponseMapper loginResponseMapper;
   @Mock private PasswordEncoder passwordEncoder;
   @Mock private AuthEntryPointJwt authEntryPointJwt;
+  @Mock private NotificationSettingsService notificationSettingsService;
 
   @Test
-  void loginMethodReturnTokensTest() {
-    LoginResponseDto expectedResult = getLoginResponseDto("eyJhbGciOiJI", "UCkErJNzC0rcAd", 0, 0);
+  void loginMethodReturnTokensForVerificatedPersonAccountTest() {
+    LoginResponseDto expectedResult =
+        getLoginResponseDto(
+            "eyJhbGciOiJI",
+            "UCkErJNzC0rcAd",
+            780000,
+            600000,
+            UUID.fromString("d6d83746-d862-4562-99d4-4ec5a664a59a"));
+
+    Person person =
+        getPerson(
+            123456L, "", "", "d6d83746-d862-4562-99d4-4ec5a664a59a", "", "", PersonRole.ROLE_USER);
+    Credentials credentials =
+        getCredentials(
+            "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
+            "postgres",
+            "postgres",
+            true,
+            "",
+            "",
+            person,
+            false,
+            "");
 
     when(authenticationManager.authenticate(any())).thenReturn(getAuthentication());
     when(jwtUtils.generateJwtToken((Authentication) any())).thenReturn("eyJhbGciOiJI");
     when(jwtUtils.generateRefreshToken((Authentication) any())).thenReturn("UCkErJNzC0rcAd");
-    when(authEntryPointJwt.getIncorrectPasswordCounter()).thenReturn(0);
     when(credentialsRepository.findByLogin("postgres"))
-        .thenReturn(
-            Optional.ofNullable(
-                getCredentials(
-                    "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
-                    "postgres",
-                    "postgres",
-                    "",
-                    null,
-                    false,
-                    "")));
+        .thenReturn(Optional.ofNullable(credentials));
 
     when(credentialsRepository.save(
             getCredentials(
                 "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
                 "postgres",
                 "postgres",
+                true,
                 "UCkErJNzC0rcAd",
-                null,
+                "",
+                person,
                 false,
                 "")))
         .thenReturn(
@@ -66,11 +86,14 @@ public class AuthServiceTest {
                 "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
                 "postgres",
                 "postgres",
+                true,
                 "UCkErJNzC0rcAd",
-                null,
+                "",
+                person,
                 false,
                 ""));
-    when(loginResponseMapper.toLoginResponseDto("eyJhbGciOiJI", "UCkErJNzC0rcAd", 0, 0))
+    when(loginResponseMapper.toLoginResponseDto(
+            "eyJhbGciOiJI", "UCkErJNzC0rcAd", 0, 0, credentials.getPerson().getPersonId()))
         .thenReturn(expectedResult);
 
     LoginResponseDto actualResult = authService.login(getLoginRequest("postgres", "postgres"));
@@ -80,32 +103,49 @@ public class AuthServiceTest {
 
   @Test
   void refreshJwtMethodReturnNewTokensTest() {
-    LoginResponseDto expectedResult = getLoginResponseDto("XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0);
+    LoginResponseDto expectedResult =
+        getLoginResponseDto(
+            "XOFsm1P2tSDo",
+            "P3yzy8a91ixRrB",
+            0,
+            0,
+            UUID.fromString("d6d83746-d862-4562-99d4-4ec5a664a59a"));
 
+    Person person =
+        getPerson(
+            123456L, "", "", "d6d83746-d862-4562-99d4-4ec5a664a59a", "", "", PersonRole.ROLE_USER);
+    Credentials credentials =
+        getCredentials(
+            "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
+            "postgres",
+            "postgres",
+            true,
+            "UCkErJNzC0rcAd",
+            "",
+            person,
+            false,
+            "");
     when(credentialsRepository.findByRefreshToken("UCkErJNzC0rcAd"))
-        .thenReturn(
-            Optional.ofNullable(
-                getCredentials(
-                    "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
-                    "postgres",
-                    "postgres",
-                    "UCkErJNzC0rcAd",
-                    null,
-                    false,
-                    "")));
+        .thenReturn(Optional.ofNullable(credentials));
+
     when(jwtUtils.validateJwtToken("UCkErJNzC0rcAd")).thenReturn(true);
     when(jwtUtils.getLoginFromJwtToken("UCkErJNzC0rcAd")).thenReturn("postgres");
     when(jwtUtils.generateJwtToken("postgres")).thenReturn("XOFsm1P2tSDo");
-    when(loginResponseMapper.toLoginResponseDto("XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0))
-        .thenReturn(getLoginResponseDto("XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0));
+    when(loginResponseMapper.toLoginResponseDto(
+            "XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0, credentials.getPerson().getPersonId()))
+        .thenReturn(
+            getLoginResponseDto(
+                "XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0, credentials.getPerson().getPersonId()));
     when(jwtUtils.generateRefreshToken("postgres")).thenReturn("P3yzy8a91ixRrB");
     when(credentialsRepository.save(
             getCredentials(
                 "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
                 "postgres",
                 "postgres",
+                true,
                 "P3yzy8a91ixRrB",
-                null,
+                "",
+                person,
                 false,
                 "")))
         .thenReturn(
@@ -113,8 +153,10 @@ public class AuthServiceTest {
                 "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
                 "postgres",
                 "postgres",
+                true,
                 "P3yzy8a91ixRrB",
-                null,
+                "",
+                person,
                 false,
                 ""));
 
@@ -124,41 +166,59 @@ public class AuthServiceTest {
   }
 
   @Test
-  void changePasswordTest() {
-    when(credentialsRepository.findByPersonId(getUUID()))
+  void changePasswordInVerificatedPersonAccountTest() {
+    ChangePasswordResponseDto expectedResult = getChangePasswordResult();
+
+    Person person =
+        getPerson(
+            123456L, "", "", "d6d83746-d862-4562-99d4-4ec5a664a59a", "", "", PersonRole.ROLE_USER);
+
+    when(credentialsRepository.findByPersonId(
+            UUID.fromString("d6d83746-d862-4562-99d4-4ec5a664a59a")))
         .thenReturn(
             Optional.ofNullable(
                 getCredentials(
                     "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
                     "postgres",
                     "postgres",
+                    true,
                     "P3yzy8a91ixRrB",
-                    null,
+                    "",
+                    person,
                     false,
                     "")));
-    when(passwordEncoder.encode(getChangePasswordRequest("newPassword").getNewPassword()))
+    when(passwordEncoder.encode(
+            getChangePasswordRequest("newPassword", "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454")
+                .getNewPassword()))
         .thenReturn("encodedPassword");
     when(credentialsRepository.save(
             getCredentials(
                 "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
                 "postgres",
-                "encodedPassword",
+                "postgres",
+                true,
                 "P3yzy8a91ixRrB",
-                null,
+                "encodedPassword",
+                person,
                 false,
                 "")))
         .thenReturn(
             getCredentials(
                 "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",
                 "postgres",
-                "encodedPassword",
+                "postgres",
+                true,
                 "P3yzy8a91ixRrB",
-                null,
+                "encodedPassword",
+                person,
                 false,
                 ""));
 
-    String actualResult =
-        authService.changePassword(getChangePasswordRequest("newPassword"), getUUID());
+    when(notificationSettingsService.sendConfirmationCodeRequest(person, "changeCredentials"))
+        .thenReturn(getChangePasswordResult());
+    ChangePasswordResponseDto actualResult =
+        authService.changePassword(
+            getChangePasswordRequest("newPassword", "d6d83746-d862-4562-99d4-4ec5a664a59a"));
     assertEquals(getChangePasswordResult(), actualResult);
   }
 }

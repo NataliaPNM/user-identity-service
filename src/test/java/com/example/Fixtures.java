@@ -1,10 +1,14 @@
 package com.example;
 
-import com.example.dto.*;
+import com.example.dto.request.ChangePasswordRequest;
+import com.example.dto.request.LoginRequest;
+import com.example.dto.request.NewTokensRequest;
+import com.example.dto.response.ChangePasswordResponseDto;
+import com.example.dto.response.LoginResponseDto;
 import com.example.model.Credentials;
 import com.example.model.Person;
-
 import com.example.model.PersonRole;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 
 import java.util.UUID;
@@ -15,18 +19,14 @@ public class Fixtures {
     return LoginRequest.builder().login(login).password(password).build();
   }
 
-  public static PersonContactsDto getPersonContactsDto(String uuid, String email) {
-    return PersonContactsDto.builder().id(UUID.fromString(uuid)).email(email).build();
-  }
-
-  public static PersonContactsRequestDto getPersonContactsRequestDto(String uuid) {
-    PersonContactsRequestDto personContactsRequestDto = new PersonContactsRequestDto();
-    personContactsRequestDto.setPersonId(uuid);
-    return personContactsRequestDto;
-  }
-
-  public static String getChangePasswordResult() {
-    return "Password changed!";
+  public static ChangePasswordResponseDto getChangePasswordResult() {
+    return ChangePasswordResponseDto.builder()
+        .status(HttpStatus.PRECONDITION_REQUIRED)
+        .message("This operation requires confirmation by code")
+        .operationId(UUID.fromString("a05ed02c-fca0-4912-9773-6b13c31b772a"))
+        .lockTime("")
+        .contact("mihant91@gmail.com")
+        .build();
   }
 
   public static UUID getUUID() {
@@ -37,7 +37,9 @@ public class Fixtures {
       String uuid,
       String login,
       String password,
+      Boolean isAccountVerified,
       String refreshToken,
+      String temporaryPassword,
       Person person,
       Boolean lock,
       String lockTime) {
@@ -45,8 +47,10 @@ public class Fixtures {
         .credentialsId(UUID.fromString(uuid))
         .login(login)
         .password(password)
+        .isAccountVerified(isAccountVerified)
         .refreshToken(refreshToken)
         .person(person)
+        .temporaryPassword(temporaryPassword)
         .lock(lock)
         .lockTime(lockTime)
         .build();
@@ -61,21 +65,24 @@ public class Fixtures {
       String token,
       String refreshToken,
       int refreshTokenExpirationTime,
-      int accessTokenExpirationTime) {
+      int accessTokenExpirationTime,
+      UUID personId) {
     return LoginResponseDto.builder()
         .token(token)
         .refreshToken(refreshToken)
         .refreshTokenExpirationTime(refreshTokenExpirationTime)
+        .personId(personId)
         .accessTokenExpirationTime(accessTokenExpirationTime)
         .build();
   }
 
-  public static RequestNewTokensDto getRequestNewTokensDto(String refreshToken) {
-    return RequestNewTokensDto.builder().refreshToken(refreshToken).build();
+  public static NewTokensRequest getRequestNewTokensDto(String refreshToken) {
+    return NewTokensRequest.builder().refreshToken(refreshToken).build();
   }
 
-  public static ChangePasswordRequest getChangePasswordRequest(String newPassword) {
-    return ChangePasswordRequest.builder().newPassword(newPassword).build();
+  public static ChangePasswordRequest getChangePasswordRequest(
+      String newPassword, String personId) {
+    return ChangePasswordRequest.builder().personId(personId).newPassword(newPassword).build();
   }
 
   public static Person getPersonWithoutData() {

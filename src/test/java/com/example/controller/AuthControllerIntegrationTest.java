@@ -24,6 +24,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import static com.example.Fixtures.*;
 import static org.mockito.BDDMockito.given;
@@ -56,7 +57,7 @@ class AuthControllerIntegrationTest {
   @Test
   void signInStatusOkTest() throws Exception {
     when(authService.login(getLoginRequest("postgres", "postgres")))
-        .thenReturn(getLoginResponseDto("eyJhbGciOiJI", "UCkErJNzC0rcAd", 0, 0));
+        .thenReturn(getLoginResponseDto("eyJhbGciOiJI", "UCkErJNzC0rcAd", 0, 0, UUID.fromString("d6d83746-d862-4562-99d4-4ec5a664a59a")));
     mockMvc
         .perform(
             post("/auth/signin")
@@ -70,13 +71,13 @@ class AuthControllerIntegrationTest {
             content()
                 .json(
                     mapper.writeValueAsString(
-                        getLoginResponseDto("eyJhbGciOiJI", "UCkErJNzC0rcAd", 0, 0))));
+                        getLoginResponseDto("eyJhbGciOiJI", "UCkErJNzC0rcAd", 0, 0,UUID.fromString("d6d83746-d862-4562-99d4-4ec5a664a59a")))));
   }
 
   @Test
   void refreshTokenStatusOkTest() throws Exception {
     when(authService.refreshJwt(getRequestNewTokensDto("UCkErJNzC0rcAd")))
-        .thenReturn(getLoginResponseDto("XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0));
+        .thenReturn(getLoginResponseDto("XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0,UUID.fromString("d6d83746-d862-4562-99d4-4ec5a664a59a")));
     mockMvc
         .perform(
             post("/auth/refresh")
@@ -90,7 +91,7 @@ class AuthControllerIntegrationTest {
             content()
                 .json(
                     mapper.writeValueAsString(
-                        getLoginResponseDto("XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0))));
+                        getLoginResponseDto("XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0,UUID.fromString("d6d83746-d862-4562-99d4-4ec5a664a59a")))));
   }
 
   @Test
@@ -113,18 +114,22 @@ class AuthControllerIntegrationTest {
   @Test
   void changePasswordStatusOkTest() throws Exception {
 
-    given(authService.changePassword(getChangePasswordRequest("newPassword"), getUUID()))
+    given(authService.changePassword(getChangePasswordRequest("newPassword", getUUID().toString())))
         .willReturn(getChangePasswordResult());
     mockMvc
         .perform(
             post("/auth/secure")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(getChangePasswordRequest("newPassword")))
+                .content(mapper.writeValueAsString(getChangePasswordRequest("newPassword", getUUID().toString())))
                 .characterEncoding("utf-8")
                 .accept(MediaType.APPLICATION_JSON))
         .andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(content().string(getChangePasswordResult()));
+        .andExpect(status().isPreconditionRequired()).andExpect(
+                    content()
+                            .json(
+                                    mapper.writeValueAsString(
+                                            getChangePasswordResult())));
+
   }
 
   private final HandlerMethodArgumentResolver putAuthenticationPrincipal =

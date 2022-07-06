@@ -1,17 +1,27 @@
 package com.example.controller;
 
-import com.example.dto.*;
+import com.example.dto.request.ChangePasswordRequest;
+import com.example.dto.request.LoginRequest;
+import com.example.dto.request.NewTokensRequest;
+import com.example.dto.request.SetDefaultNotificationTypeRequest;
+import com.example.dto.response.ChangePasswordResponseDto;
+import com.example.dto.response.LoginResponseDto;
 import com.example.security.JwtUtils;
 import com.example.service.AuthService;
-import com.example.security.JwtPerson;
+import com.example.service.NotificationSettingsService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.http.*;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import javax.validation.Valid;
-import static com.google.common.net.HttpHeaders.AUTHORIZATION;
+import java.io.IOException;
+import java.util.Map;
+import java.util.UUID;
+
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -22,6 +32,7 @@ public class AuthController {
 
   private final AuthService authService;
   private final JwtUtils jwtUtils;
+  private final NotificationSettingsService notificationSettingsService;
 
   @Operation(
       summary = "Аутентификация и авторизация",
@@ -41,7 +52,7 @@ public class AuthController {
           "RefreshToken необходим для получения новой пары токенов, т.к. срок жизни обычного токена (в целях безопасности) ограничен")
   @PostMapping("/refresh")
   @ResponseStatus(HttpStatus.OK)
-  public LoginResponseDto refreshToken(@Valid @RequestBody RequestNewTokensDto refreshToken) {
+  public LoginResponseDto refreshToken(@Valid @RequestBody NewTokensRequest refreshToken) {
     return authService.refreshJwt(refreshToken);
   }
 
@@ -50,17 +61,40 @@ public class AuthController {
       description = "Изменение одноразового пароля после первого входа")
   @PostMapping("/secure")
   @ResponseStatus(HttpStatus.OK)
-  public String changeCredentials(
-      @Valid @RequestBody ChangePasswordRequest changePasswordRequest,
-      @AuthenticationPrincipal JwtPerson person) {
-    return authService.changePassword(changePasswordRequest, person.getId());
+  public ResponseEntity<ChangePasswordResponseDto> changeCredentials(
+      @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+    var body = authService.changePassword(changePasswordRequest);
+    return ResponseEntity.status(body.getStatus()).body(body);
   }
+
   @Operation(
-          summary = "Валидация токена",
-          description = "Данный ендпоинт используется api-gateway для проверки валидности токенов")
+      summary = "Валидация токена",
+      description = "Данный ендпоинт используется api-gateway для проверки валидности токенов")
   @PostMapping("/validateToken")
   public Boolean getResult(@RequestHeader(AUTHORIZATION) String token) {
     var header = token.split(" ");
     return jwtUtils.validateJwtToken(header[1]);
+  }
+
+  @Operation(summary = "Получить дефолтный способ отправки кода подтверждения")
+  @GetMapping("/defaultNotificationType")
+  public String getDefaultType(String personId) {
+
+    return notificationSettingsService.getPersonDefaultNotificationType(UUID.fromString(personId));
+  }
+
+  @Operation(summary = "Изменить дефолтный способ отправки кода подтверждения")
+  @PostMapping("/setDefaultNotificationType")
+  public String setDefaultType(
+      @Valid @RequestBody SetDefaultNotificationTypeRequest setTypeRequestDto) {
+
+    return notificationSettingsService.setPersonDefaultConfirmationType(setTypeRequestDto);
+  }
+
+  @Operation(summary = "Получить сводку по заблокированным способам отправки кода подтверждения")
+  @GetMapping("/getPersonLocks")
+  public Map<String, String> getPersonLocks(String personId) {
+
+    return notificationSettingsService.getPersonConfirmationLocks(UUID.fromString(personId));
   }
 }

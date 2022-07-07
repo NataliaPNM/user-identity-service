@@ -3,10 +3,10 @@ package com.example.controller;
 import com.example.dto.request.ChangePasswordRequest;
 import com.example.dto.request.LoginRequest;
 import com.example.dto.request.NewTokensRequest;
-import com.example.dto.request.SetDefaultNotificationTypeRequest;
 import com.example.dto.response.ChangePasswordResponseDto;
 import com.example.dto.response.LoginResponseDto;
 import com.example.security.JwtUtils;
+import com.example.service.AccountService;
 import com.example.service.AuthService;
 import com.example.service.NotificationSettingsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,9 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
 
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 
@@ -31,6 +28,7 @@ import static org.apache.http.HttpHeaders.AUTHORIZATION;
 public class AuthController {
 
   private final AuthService authService;
+  private final AccountService accountService;
   private final JwtUtils jwtUtils;
   private final NotificationSettingsService notificationSettingsService;
 
@@ -74,27 +72,5 @@ public class AuthController {
   public Boolean getResult(@RequestHeader(AUTHORIZATION) String token) {
     var header = token.split(" ");
     return jwtUtils.validateJwtToken(header[1]);
-  }
-
-  @Operation(summary = "Получить дефолтный способ отправки кода подтверждения")
-  @GetMapping("/defaultNotificationType")
-  public String getDefaultType(String personId) {
-
-    return notificationSettingsService.getPersonDefaultNotificationType(UUID.fromString(personId));
-  }
-
-  @Operation(summary = "Изменить дефолтный способ отправки кода подтверждения")
-  @PostMapping("/setDefaultNotificationType")
-  public String setDefaultType(
-      @Valid @RequestBody SetDefaultNotificationTypeRequest setTypeRequestDto) {
-
-    return notificationSettingsService.setPersonDefaultConfirmationType(setTypeRequestDto);
-  }
-
-  @Operation(summary = "Получить сводку по заблокированным способам отправки кода подтверждения")
-  @GetMapping("/getPersonLocks")
-  public Map<String, String> getPersonLocks(String personId) {
-
-    return notificationSettingsService.getPersonConfirmationLocks(UUID.fromString(personId));
   }
 }

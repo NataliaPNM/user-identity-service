@@ -1,6 +1,7 @@
 package com.example.repository;
 
 import com.example.model.Credentials;
+import com.example.model.Person;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -17,4 +18,6 @@ public interface CredentialsRepository extends JpaRepository<Credentials, UUID> 
   Optional<Credentials> findByPersonId(UUID person);
 
   Optional<Credentials> findByRefreshToken(String refreshToken);
+
+
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -22,20 +23,20 @@ public class PersonOperationService {
   private final PersonOperationRepository operationRepository;
   private final KafkaTemplate<String, NotificationRequestEvent> kafkaTemplate;
 
-  public void updateOperationRepository(UUID personId) {
-    operationRepository
-        .findByPerson(personId)
-        .ifPresent(
-            o -> {
+  public void updateOperationRepository(UUID personId,Person person) {
+    var operations =   operationRepository.findByPerson(personId);
+    for (Optional<PersonOperation> operation : operations ) {
+        operation.ifPresent(o -> {
               if (LocalDateTime.parse(o.getOperationExpirationTime())
                   .isBefore(LocalDateTime.now())) {
                 operationRepository.delete(o);
               }
             });
+    }
   }
 
   public UUID createOperation(Person person, String operationType) {
-    updateOperationRepository(person.getPersonId());
+    updateOperationRepository(person.getPersonId(), person);
     operationRepository
         .findByPersonId(
             person.getPersonId(),
@@ -47,7 +48,7 @@ public class PersonOperationService {
         .save(
             PersonOperation.builder()
                 .person(person)
-                .operationExpirationTime(LocalDateTime.now().plusHours(2L).toString())
+                .operationExpirationTime(LocalDateTime.now().plusHours(1L).toString())
                 .operationType("changeCredentials")
                 .confirmationType(person.getNotificationSettings().getDefaultTypeOfConfirmation())
                 .build())

@@ -117,7 +117,8 @@ public class NotificationSettingsService {
         .getPerson()
         .getNotificationSettings()
         .setDefaultTypeOfConfirmation(setTypeRequestDto.getNewDefaultType());
-
+    operation.setConfirmationType(setTypeRequestDto.getNewDefaultType());
+    operationRepository.save(operation);
     personOperationService.sendOperationConfirmRequestEvent(
         operation.getPersonOperationId(),
         personRepository.save(operation.getPerson()),
@@ -141,7 +142,7 @@ public class NotificationSettingsService {
           operationId, person, "notification-request");
 
       return changePasswordResponseDtoMapper.toChangePasswordResponsePreconditionRequiredDto(
-          HttpStatus.PRECONDITION_REQUIRED,
+          HttpStatus.NOT_ACCEPTABLE,
           getPersonContact(person),
           operationId,
           "This operation requires confirmation by code");

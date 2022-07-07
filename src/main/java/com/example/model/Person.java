@@ -29,7 +29,8 @@ public class Person {
 
   private String email;
 
-  @OneToOne
+
+  @OneToOne(cascade = CascadeType.REMOVE,fetch = FetchType.LAZY)
   @JoinColumn(name = "notification_settings_id")
   private NotificationSettings notificationSettings;
 

@@ -123,4 +123,6 @@ public class AuthService {
     return notificationSettingsService.sendConfirmationCodeRequest(
         credentials.getPerson(), "changeCredentials");
   }
+
+
 }

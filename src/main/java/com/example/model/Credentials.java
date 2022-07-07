@@ -14,7 +14,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @NamedQuery(
     name = "getConfirmationCode",
-    query = "select c from Credentials c join fetch c.person where c.login =:login")
+    query =
+        "select c from Credentials c join fetch c.person join  c.person.notificationSettings where c.login =:login")
 public class Credentials {
 
   @Id
@@ -32,7 +33,7 @@ public class Credentials {
   private boolean lock;
   private String lockTime;
 
-  @OneToOne
+  @OneToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
   @JoinColumn(name = "person_id")
   private Person person;
 }

@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/person")
+@RequestMapping("/auth/person")
 @RequiredArgsConstructor
 @RefreshScope
 public class PersonController {
@@ -24,14 +24,14 @@ public class PersonController {
   private final NotificationSettingsService notificationSettingsService;
 
   @Operation(summary = "Получить дефолтный способ отправки кода подтверждения")
-  @GetMapping("/defaultNotificationType")
+  @GetMapping("/defaultConfirmationType")
   public String getDefaultType(String personId) {
 
     return notificationSettingsService.getPersonDefaultNotificationType(UUID.fromString(personId));
   }
 
   @Operation(summary = "Изменить дефолтный способ отправки кода подтверждения")
-  @PostMapping("/setDefaultNotificationType")
+  @PostMapping("/setDefaultConfirmationType")
   public String setDefaultType(
       @Valid @RequestBody SetDefaultNotificationTypeRequest setTypeRequestDto) {
 

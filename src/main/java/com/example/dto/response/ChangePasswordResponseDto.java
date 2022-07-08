@@ -15,5 +15,5 @@ public class ChangePasswordResponseDto {
   private UUID operationId;
   private String message;
   private HttpStatus status;
-  private String lockTime;
+  private String unlockTime;
 }

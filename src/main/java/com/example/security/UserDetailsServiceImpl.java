@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Component
 @RequiredArgsConstructor
@@ -27,7 +28,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         credentialsRepository
             .findByLogin(login)
             .orElseThrow(() -> new NotFoundException("Not found user with this login"));
-    if (authEntryPointJwt.getIncorrectPasswordCounter() == 5) {
+    if (authEntryPointJwt.getIncorrectPasswordCounter() == 4) {
       authEntryPointJwt.setIncorrectPasswordCounter(0);
       credentials.setLock(true);
       if (credentials.isAccountVerified()) {
@@ -38,7 +39,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
       var cred = credentialsRepository.save(credentials);
       var locktime = cred.getLockTime();
-      throw new PersonAccountLockedException(locktime);
+      throw new PersonAccountLockedException(getUnlockTimeInMs(LocalDateTime.parse(locktime)));
     }
     String lockTime = credentials.getLockTime();
     if (!lockTime.equals("") && LocalDateTime.now().isAfter(LocalDateTime.parse(lockTime))) {
@@ -47,5 +48,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
       credentialsRepository.save(credentials);
     }
     return JwtPerson.build(credentials.getPerson(), credentials);
+  }
+  public String getUnlockTimeInMs(LocalDateTime to){
+
+    return String.valueOf(ChronoUnit.MILLIS.between(LocalDateTime.now(), to));
   }
 }

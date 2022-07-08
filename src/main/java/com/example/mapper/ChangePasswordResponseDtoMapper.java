@@ -13,7 +13,7 @@ public interface ChangePasswordResponseDtoMapper {
   @Mapping(target = "contact", source = "contact")
   @Mapping(target = "operationId", source = "operationId")
   @Mapping(target = "message", source = "message")
-  @Mapping(target = "lockTime", source = "lockTime")
+  @Mapping(target = "unlockTime", source = "lockTime")
   ChangePasswordResponseDto toChangePasswordResponseConfirmationLockedDto(
       HttpStatus status, String contact, UUID operationId, String message, String lockTime);
 

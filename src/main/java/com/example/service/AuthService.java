@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -58,7 +59,9 @@ public class AuthService {
             .findByLogin(loginRequest.getLogin())
             .orElseThrow(() -> new NotFoundException("Not found person with this login"));
     if (credentials.isLock()) {
-      throw new PersonAccountLockedException(credentials.getLockTime());
+      throw new PersonAccountLockedException(
+          notificationSettingsService.getUnlockTimeInMs(
+              LocalDateTime.parse(credentials.getLockTime())));
     }
     Authentication authentication =
         authenticationManager.authenticate(
@@ -112,7 +115,9 @@ public class AuthService {
             .findByPersonId(UUID.fromString(changePasswordRequest.getPersonId()))
             .orElseThrow(() -> new NotFoundException("Not found person with this id"));
     if (credentials.isLock()) {
-      throw new PersonAccountLockedException(credentials.getLockTime());
+      throw new PersonAccountLockedException(
+          notificationSettingsService.getUnlockTimeInMs(
+              LocalDateTime.parse(credentials.getLockTime())));
     }
     notificationSettingsService.checkPersonConfirmationFullLock(credentials.getPerson());
     var temporaryPassword = passwordEncoder.encode(changePasswordRequest.getNewPassword());
@@ -123,6 +128,4 @@ public class AuthService {
     return notificationSettingsService.sendConfirmationCodeRequest(
         credentials.getPerson(), "changeCredentials");
   }
-
-
 }

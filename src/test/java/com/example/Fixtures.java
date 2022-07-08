@@ -24,7 +24,7 @@ public class Fixtures {
         .status(HttpStatus.PRECONDITION_REQUIRED)
         .message("This operation requires confirmation by code")
         .operationId(UUID.fromString("a05ed02c-fca0-4912-9773-6b13c31b772a"))
-        .lockTime("")
+        .unlockTime("")
         .contact("mihant91@gmail.com")
         .build();
   }

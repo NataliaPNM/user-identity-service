@@ -78,7 +78,6 @@ public class UserIdentityExceptionHandler extends ResponseEntityExceptionHandler
     body.clear();
     body.put(STATUS, "423");
     body.put(ERROR, "Locked");
-    body.put(MESSAGE, "Default confirmation type locked");
     body.put("unlockTime", ex.getMessage());
     return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
   }

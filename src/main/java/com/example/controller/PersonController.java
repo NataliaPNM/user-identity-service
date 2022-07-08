@@ -3,6 +3,7 @@ package com.example.controller;
 import com.example.dto.request.CreatePersonRequest;
 import com.example.dto.request.SetDefaultNotificationTypeRequest;
 import com.example.dto.response.CreatePersonResponseDto;
+import com.example.dto.response.DefaultConfirmationTypeResponse;
 import com.example.service.AccountService;
 import com.example.service.NotificationSettingsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,7 +26,7 @@ public class PersonController {
 
   @Operation(summary = "Получить дефолтный способ отправки кода подтверждения")
   @GetMapping("/defaultConfirmationType")
-  public String getDefaultType(String personId) {
+  public DefaultConfirmationTypeResponse getDefaultType(String personId) {
 
     return notificationSettingsService.getPersonDefaultNotificationType(UUID.fromString(personId));
   }

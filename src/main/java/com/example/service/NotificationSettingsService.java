@@ -3,6 +3,7 @@ package com.example.service;
 import com.example.dto.request.OperationConfirmEvent;
 import com.example.dto.request.SetDefaultNotificationTypeRequest;
 import com.example.dto.response.ChangePasswordResponseDto;
+import com.example.dto.response.DefaultConfirmationTypeResponse;
 import com.example.exception.DefaultConfirmationTypeLockedException;
 import com.example.exception.IncorrectDefaultNotificationTypeException;
 import com.example.exception.NotFoundException;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -40,7 +42,7 @@ public class NotificationSettingsService {
       if (LocalDateTime.parse(person.getNotificationSettings().getEmailLockTime())
           .isAfter(LocalDateTime.now())) {
         throw new OperationNotAvailableException(
-            person.getNotificationSettings().getEmailLockTime());
+            getUnlockTimeInMs(LocalDateTime.parse(person.getNotificationSettings().getEmailLockTime())));
       }
       person.getNotificationSettings().setConfirmationLock(ConfirmationLock.EMAIL_LOCK);
       person.getNotificationSettings().setEmailLockTime("");
@@ -73,8 +75,11 @@ public class NotificationSettingsService {
         .orElseThrow(() -> new NotFoundException("Not found person with this id"));
   }
 
-  public String getPersonDefaultNotificationType(UUID personId) {
-    return getPersonById(personId).getNotificationSettings().getDefaultTypeOfConfirmation();
+  public DefaultConfirmationTypeResponse getPersonDefaultNotificationType(UUID personId) {
+    return  DefaultConfirmationTypeResponse
+            .builder()
+            .defaultConfirmationType(getPersonById(personId).getNotificationSettings().getDefaultTypeOfConfirmation())
+            .build();
   }
 
   public void checkNewDefaultConfirmationType(
@@ -94,7 +99,7 @@ public class NotificationSettingsService {
 
       if (!newTypeLock.equals("")
           && LocalDateTime.parse(newTypeLock).isAfter(LocalDateTime.now())) {
-        throw new DefaultConfirmationTypeLockedException("Chose another confirmation type");
+        throw new DefaultConfirmationTypeLockedException(getUnlockTimeInMs(LocalDateTime.parse(newTypeLock)));
       }
     } else {
       throw new IncorrectDefaultNotificationTypeException("Incorrect confirmation type");
@@ -152,7 +157,7 @@ public class NotificationSettingsService {
         getPersonContact(person),
         operationId,
         "Chose another confirmation type",
-        lockTime);
+            getUnlockTimeInMs(LocalDateTime.parse(lockTime)));
   }
 
   public void updateNotificationTypeStatus(OperationConfirmEvent confirmDto) {
@@ -191,5 +196,9 @@ public class NotificationSettingsService {
 
     var operationConfirm = consumerRecord.value();
     updateNotificationTypeStatus(operationConfirm);
+  }
+  public String getUnlockTimeInMs(LocalDateTime to){
+
+    return String.valueOf(ChronoUnit.MILLIS.between(LocalDateTime.now(), to));
   }
 }

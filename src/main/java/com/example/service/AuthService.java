@@ -52,17 +52,26 @@ public class AuthService {
           credentials.getPerson().getPersonId().toString());
     }
   }
+  public void updatePersonAccountLock(Credentials credentials) {
 
+    if (credentials.isLock()&&LocalDateTime.parse(credentials.getLockTime()).isBefore(LocalDateTime.now())) {
+      credentials.setLock(false);
+      credentials.setLockTime("");
+      credentialsRepository.save(credentials);
+    }else if(credentials.isLock()){
+
+      throw new PersonAccountLockedException(
+              notificationSettingsService.getUnlockTimeInMs(
+                      LocalDateTime.parse(credentials.getLockTime())));
+    }
+  }
   public LoginResponseDto login(LoginRequest loginRequest) {
     var credentials =
         credentialsRepository
             .findByLogin(loginRequest.getLogin())
             .orElseThrow(() -> new NotFoundException("Not found person with this login"));
-    if (credentials.isLock()) {
-      throw new PersonAccountLockedException(
-          notificationSettingsService.getUnlockTimeInMs(
-              LocalDateTime.parse(credentials.getLockTime())));
-    }
+
+    updatePersonAccountLock(credentials);
     Authentication authentication =
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
@@ -114,11 +123,7 @@ public class AuthService {
         credentialsRepository
             .findByPersonId(UUID.fromString(changePasswordRequest.getPersonId()))
             .orElseThrow(() -> new NotFoundException("Not found person with this id"));
-    if (credentials.isLock()) {
-      throw new PersonAccountLockedException(
-          notificationSettingsService.getUnlockTimeInMs(
-              LocalDateTime.parse(credentials.getLockTime())));
-    }
+    updatePersonAccountLock(credentials);
     notificationSettingsService.checkPersonConfirmationFullLock(credentials.getPerson());
     var temporaryPassword = passwordEncoder.encode(changePasswordRequest.getNewPassword());
 

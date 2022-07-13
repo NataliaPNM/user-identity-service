@@ -108,7 +108,9 @@ public class NotificationSettingsService {
 
   public String setPersonDefaultConfirmationType(
       SetDefaultNotificationTypeRequest setTypeRequestDto) {
-
+    if(!setTypeRequestDto.getNewDefaultType().equals("email") && !setTypeRequestDto.getNewDefaultType().equals("push")){
+      throw new IncorrectDefaultNotificationTypeException("Incorrect confirmation type");
+    }
     var operation =
         operationRepository
             .findByPersonOperationId(setTypeRequestDto.getOperationId())

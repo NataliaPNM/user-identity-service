@@ -79,6 +79,6 @@ public class UserIdentityExceptionHandler extends ResponseEntityExceptionHandler
     body.put(STATUS, "423");
     body.put(ERROR, "Locked");
     body.put("unlockTime", ex.getMessage());
-    return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.LOCKED, request);
   }
 }

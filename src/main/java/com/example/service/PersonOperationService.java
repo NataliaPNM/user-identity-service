@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -23,20 +22,18 @@ public class PersonOperationService {
   private final PersonOperationRepository operationRepository;
   private final KafkaTemplate<String, NotificationRequestEvent> kafkaTemplate;
 
-  public void updateOperationRepository(UUID personId,Person person) {
-    var operations =   operationRepository.findByPerson(personId);
-    for (Optional<PersonOperation> operation : operations ) {
-        operation.ifPresent(o -> {
-              if (LocalDateTime.parse(o.getOperationExpirationTime())
-                  .isBefore(LocalDateTime.now())) {
-                operationRepository.delete(o);
-              }
-            });
+  public void updateOperationRepository() {
+    var operations = operationRepository.findAll();
+    for (PersonOperation operation : operations) {
+      if (LocalDateTime.parse(operation.getOperationExpirationTime())
+          .isBefore(LocalDateTime.now())) {
+        operationRepository.delete(operation);
+      }
     }
   }
 
   public UUID createOperation(Person person, String operationType) {
-    updateOperationRepository(person.getPersonId(), person);
+    updateOperationRepository();
     operationRepository
         .findByPersonId(
             person.getPersonId(),

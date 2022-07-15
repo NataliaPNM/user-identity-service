@@ -4,6 +4,7 @@ import com.example.dto.request.CreatePersonRequest;
 import com.example.dto.request.SetDefaultNotificationTypeRequest;
 import com.example.dto.response.CreatePersonResponseDto;
 import com.example.dto.response.DefaultConfirmationTypeResponse;
+import com.example.dto.response.SetDefaultConfirmationTypeResponse;
 import com.example.service.AccountService;
 import com.example.service.NotificationSettingsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +34,7 @@ public class PersonController {
 
   @Operation(summary = "Изменить дефолтный способ отправки кода подтверждения")
   @PostMapping("/setDefaultConfirmationType")
-  public String setDefaultType(
+  public SetDefaultConfirmationTypeResponse setDefaultType(
       @Valid @RequestBody SetDefaultNotificationTypeRequest setTypeRequestDto) {
 
     return notificationSettingsService.setPersonDefaultConfirmationType(setTypeRequestDto);

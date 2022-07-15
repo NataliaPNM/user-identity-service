@@ -4,6 +4,7 @@ import com.example.dto.request.OperationConfirmEvent;
 import com.example.dto.request.SetDefaultNotificationTypeRequest;
 import com.example.dto.response.ChangePasswordResponseDto;
 import com.example.dto.response.DefaultConfirmationTypeResponse;
+import com.example.dto.response.SetDefaultConfirmationTypeResponse;
 import com.example.exception.DefaultConfirmationTypeLockedException;
 import com.example.exception.IncorrectDefaultNotificationTypeException;
 import com.example.exception.NotFoundException;
@@ -106,7 +107,7 @@ public class NotificationSettingsService {
     }
   }
 
-  public String setPersonDefaultConfirmationType(
+  public SetDefaultConfirmationTypeResponse setPersonDefaultConfirmationType(
       SetDefaultNotificationTypeRequest setTypeRequestDto) {
     if(!setTypeRequestDto.getNewDefaultType().equals("email") && !setTypeRequestDto.getNewDefaultType().equals("push")){
       throw new IncorrectDefaultNotificationTypeException("Incorrect confirmation type");
@@ -130,7 +131,10 @@ public class NotificationSettingsService {
         operation.getPersonOperationId(),
         personRepository.save(operation.getPerson()),
         "notification-request");
-    return "true";
+    if(setTypeRequestDto.getNewDefaultType().equals("email")){
+      return SetDefaultConfirmationTypeResponse.builder().personContact(operation.getPerson().getEmail()).build();
+    }
+    return SetDefaultConfirmationTypeResponse.builder().personContact("deviceToken?").build();
   }
   public String getPersonContact(Person person){
      if (person.getNotificationSettings().getDefaultTypeOfConfirmation().equals("push")) {

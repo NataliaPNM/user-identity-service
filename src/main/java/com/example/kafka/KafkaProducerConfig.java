@@ -1,6 +1,7 @@
 package com.example.kafka;
 
 import com.example.dto.request.NotificationRequestEvent;
+import com.example.dto.request.PasswordRecoveryNotificationRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -57,6 +58,15 @@ public class KafkaProducerConfig {
     return new KafkaTransactionManager<>(producerFactoryTransactional);
   }
 
+
+  @Bean(name = "kafkaTransactionManagerForPasswordRecoveryNeeds")
+  public KafkaTransactionManager<String, PasswordRecoveryNotificationRequest>
+      kafkaTransactionManagerForPasswordRecoveryNeeds(
+          final ProducerFactory<String, PasswordRecoveryNotificationRequest>
+              producerFactoryTransactional) {
+    return new KafkaTransactionManager<>(producerFactoryTransactional);
+  }
+
   @Bean
   public KafkaAdmin kafkaAdmin() {
     Map<String, Object> config = new HashMap<>();
@@ -70,14 +80,32 @@ public class KafkaProducerConfig {
   }
 
   @Bean
+  public ProducerFactory<String, PasswordRecoveryNotificationRequest>
+      producerFactoryForPasswordRecoveryNeeds() {
+    return new DefaultKafkaProducerFactory<>(producerConfigs());
+  }
+
+  @Bean
   public KafkaTemplate<String, NotificationRequestEvent> kafkaTemplate(
       final ProducerFactory<String, NotificationRequestEvent> producerFactory) {
     return new KafkaTemplate<>(producerFactory);
   }
 
   @Bean
+  public KafkaTemplate<String, PasswordRecoveryNotificationRequest>
+      kafkaTemplateForPasswordRecoveryNeeds(
+          final ProducerFactory<String, PasswordRecoveryNotificationRequest> producerFactory) {
+    return new KafkaTemplate<>(producerFactory);
+  }
+
+  @Bean
   public NewTopic topicForNotificationRequest() {
     return new NewTopic("notification-request", 2, (short) 2);
+  }
+
+  @Bean
+  public NewTopic topicForPasswordRecoveryRequest() {
+    return new NewTopic("password-recovery", 2, (short) 2);
   }
 
   @Bean

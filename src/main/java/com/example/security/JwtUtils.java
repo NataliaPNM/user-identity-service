@@ -33,10 +33,10 @@ public class JwtUtils {
   public String generateJwtToken(Authentication authentication) {
 
     JwtPerson userPrincipal = (JwtPerson) authentication.getPrincipal();
-    return generateJwtToken(userPrincipal.getLogin());
+    return generateJwtToken(userPrincipal.getLogin(),jwtExpirationMs);
   }
 
-  public String generateJwtToken(String login) {
+  public String generateJwtToken(String login, int jwtExpirationMs) {
     return Jwts.builder()
         .setSubject(login)
         .setIssuedAt(new Date())
@@ -47,10 +47,10 @@ public class JwtUtils {
 
   public String generateRefreshToken(Authentication authentication) {
     JwtPerson userPrincipal = (JwtPerson) authentication.getPrincipal();
-    return generateRefreshToken(userPrincipal.getLogin());
+    return generateRefreshToken(userPrincipal.getLogin(),jwtRefreshExpirationMs);
   }
 
-  public String generateRefreshToken(String login) {
+  public String generateRefreshToken(String login,int jwtRefreshExpirationMs) {
     return Jwts.builder()
         .setSubject(login)
         .setIssuedAt(new Date())
@@ -69,6 +69,7 @@ public class JwtUtils {
       return true;
     } catch (JwtException e) {
       log.error("Invalid token: ", e);
+      e.printStackTrace();
     }
     return false;
   }

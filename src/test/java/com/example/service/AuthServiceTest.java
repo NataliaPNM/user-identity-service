@@ -130,13 +130,13 @@ public class AuthServiceTest {
 
     when(jwtUtils.validateJwtToken("UCkErJNzC0rcAd")).thenReturn(true);
     when(jwtUtils.getLoginFromJwtToken("UCkErJNzC0rcAd")).thenReturn("postgres");
-    when(jwtUtils.generateJwtToken("postgres")).thenReturn("XOFsm1P2tSDo");
+    when(jwtUtils.generateJwtToken(any())).thenReturn("XOFsm1P2tSDo");
     when(loginResponseMapper.toLoginResponseDto(
             "XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0, credentials.getPerson().getPersonId()))
         .thenReturn(
             getLoginResponseDto(
                 "XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0, credentials.getPerson().getPersonId()));
-    when(jwtUtils.generateRefreshToken("postgres")).thenReturn("P3yzy8a91ixRrB");
+    when(jwtUtils.generateRefreshToken(any())).thenReturn("P3yzy8a91ixRrB");
     when(credentialsRepository.save(
             getCredentials(
                 "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454",

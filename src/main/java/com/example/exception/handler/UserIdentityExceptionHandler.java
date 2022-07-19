@@ -81,4 +81,22 @@ public class UserIdentityExceptionHandler extends ResponseEntityExceptionHandler
     body.put("unlockTime", ex.getMessage());
     return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.LOCKED, request);
   }
+  @ExceptionHandler(value = {PersonWithThisLoginOrEmailAlreadyExistsException.class})
+  protected ResponseEntity<Object> handlePersonWithThisLoginOrEmailAlreadyExistsException(
+          PersonWithThisLoginOrEmailAlreadyExistsException ex, WebRequest request) {
+    body.clear();
+    body.put(STATUS, "409");
+    body.put(ERROR, "Conflict");
+    body.put(MESSAGE, ex.getMessage());
+    return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.CONFLICT, request);
+  }
+  @ExceptionHandler(value = {OperationNotAvailableException.class})
+  protected ResponseEntity<Object> handleOperationNotAvailableException(
+          OperationNotAvailableException ex, WebRequest request) {
+    body.clear();
+    body.put(STATUS, "403");
+    body.put(ERROR, "Forbidden");
+    body.put(MESSAGE, ex.getMessage());
+    return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+  }
 }

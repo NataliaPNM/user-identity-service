@@ -3,8 +3,10 @@ package com.example.controller;
 import com.example.dto.request.ChangePasswordRequest;
 import com.example.dto.request.LoginRequest;
 import com.example.dto.request.NewTokensRequest;
+import com.example.dto.request.PasswordRecoveryRequest;
 import com.example.dto.response.ChangePasswordResponseDto;
 import com.example.dto.response.LoginResponseDto;
+import com.example.dto.response.SetDefaultConfirmationTypeResponse;
 import com.example.security.JwtUtils;
 import com.example.service.AccountService;
 import com.example.service.AuthService;
@@ -60,7 +62,7 @@ public class AuthController {
   @PostMapping("/secure")
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<ChangePasswordResponseDto> changeCredentials(
-      @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+          @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
     var body = authService.changePassword(changePasswordRequest);
     return ResponseEntity.status(body.getStatus()).body(body);
   }
@@ -72,5 +74,22 @@ public class AuthController {
   public Boolean getResult(@RequestHeader(AUTHORIZATION) String token) {
     var header = token.split(" ");
     return jwtUtils.validateJwtToken(header[1]);
+  }
+
+  @Operation(
+          summary = "Восстановление пароля",
+          description = "Отправляет ссылку на почту с токеном для восстановления пароля")
+  @PostMapping("/passwordRecovery")
+  public SetDefaultConfirmationTypeResponse passwordRecovery(@RequestBody PasswordRecoveryRequest login) {
+
+    return accountService.recoverPassword(login);
+  }
+  @Operation(
+          summary = "Установка нового пароля после запроса passwordRecovery",
+          description = "Требуется прикрепление токена который был получен с помощью ссылки для изменения пароля")
+  @PostMapping("/resetPassword")
+  public Boolean resetPassword(@RequestHeader(AUTHORIZATION) String token, @RequestBody ChangePasswordRequest changePasswordRequest) {
+    var header = token.split(" ");
+    return accountService.resetPassword(header[1],changePasswordRequest);
   }
 }

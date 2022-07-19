@@ -20,6 +20,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -103,8 +104,8 @@ public class AuthService {
       throw new AuthenticationServiceException("Auth failed");
     }
     String login = jwtUtils.getLoginFromJwtToken(token);
-    String accessToken = jwtUtils.generateJwtToken(login);
-    String refreshToken = jwtUtils.generateRefreshToken(login);
+    String accessToken = jwtUtils.generateJwtToken(SecurityContextHolder.getContext().getAuthentication());//login);
+    String refreshToken = jwtUtils.generateRefreshToken(SecurityContextHolder.getContext().getAuthentication());
 
     credentials.setRefreshToken(refreshToken);
     credentialsRepository.save(credentials);
@@ -133,4 +134,6 @@ public class AuthService {
     return notificationSettingsService.sendConfirmationCodeRequest(
         credentials.getPerson(), "changeCredentials");
   }
+
+
 }

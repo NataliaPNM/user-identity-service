@@ -64,7 +64,7 @@ public class AccountService {
             + recoveryToken
             + "'>Reset password</a>\n"
                 +"If the link above didn't work try the link below\n"
-            + "<a href='https://greeenbank/?action=forgot_password&recovery_token="
+            + "<a href='https://greenbank/?action=forgot_password&recovery_token="
             + recoveryToken
             + "'>Reset password</a>\n"
             + " </body>\n"

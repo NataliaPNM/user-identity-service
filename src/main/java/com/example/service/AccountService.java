@@ -1,9 +1,9 @@
 package com.example.service;
 
-import com.example.dto.request.ChangePasswordRequest;
 import com.example.dto.request.CreatePersonRequest;
 import com.example.dto.request.PasswordRecoveryNotificationRequest;
 import com.example.dto.request.PasswordRecoveryRequest;
+import com.example.dto.request.ResetPasswordRequest;
 import com.example.dto.response.CreatePersonResponseDto;
 import com.example.dto.response.SetDefaultConfirmationTypeResponse;
 import com.example.exception.*;
@@ -12,6 +12,7 @@ import com.example.repository.CredentialsRepository;
 import com.example.repository.NotificationSettingsRepository;
 import com.example.repository.PersonRepository;
 import com.example.security.JwtUtils;
+import io.micrometer.core.instrument.util.IOUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -36,39 +39,17 @@ public class AccountService {
   @Transactional(
       transactionManager = "kafkaTransactionManagerForPasswordRecoveryNeeds",
       propagation = Propagation.REQUIRED)
-  public SetDefaultConfirmationTypeResponse recoverPassword(PasswordRecoveryRequest recoveryRequest) {
+  public SetDefaultConfirmationTypeResponse recoverPassword(PasswordRecoveryRequest recoveryRequest)
+      throws FileNotFoundException {
     var credentials =
         credentialsRepository
             .findByLogin(recoveryRequest.getLogin())
             .orElseThrow(() -> new NotFoundException("Not found person with this login"));
     var recoveryToken = jwtUtils.generateJwtToken(recoveryRequest.getLogin(), 300000);
     checkPersonAccount(credentials);
+
     var link =
-        "<html>\n"
-            + " <body>\n"
-            + "<h3>"
-            + "Dear user, you have initiated recovering the password to access the Green Bank application. To reset your current password and set a new one, please follow the link below.</h3>"
-            + "\n"
-            + "<h3>If you have not initiated a password reset in the application, please follow the instructions below.</h3>"
-            + "<h3>1. Don't click on a link in an email</h3>"
-            + "\n"
-            + "<h3>2. Delete this email from your inbox and from your email trash</h3>"
-            + "\n"
-            + "<h3>3. For added security, you can change your email password to minimize the risk of using this link.</h3>"
-            + "\n"
-            + "<h3>4. We advise you to change the password of your account in the Green Bank application.</h3>"
-            + "\n"
-            + "<h3>Employees of our bank will never ask you for a password or data to access your account, if you receive such a request or you provide such data, you should immediately contact the bank to protect your personal data.</h3>"
-            + "\n"
-            + "<a href='greenbank://forgot_password/?recovery_token="
-            + recoveryToken
-            + "'>Reset password</a>\n"
-                +"If the link above didn't work try the link below\n"
-            + "<a href='https://greenbank/?action=forgot_password&recovery_token="
-            + recoveryToken
-            + "'>Reset password</a>\n"
-            + " </body>\n"
-            + "</html>";
+        IOUtils.toString(new FileInputStream("src/main/resources/password-recovery-link.html"));
 
     kafkaTemplate.send(
         "password-recovery",
@@ -76,7 +57,9 @@ public class AccountService {
             .email(credentials.getPerson().getEmail())
             .link(link)
             .build());
-    return SetDefaultConfirmationTypeResponse.builder().personContact(credentials.getPerson().getEmail()).build();
+    return SetDefaultConfirmationTypeResponse.builder()
+        .personContact(credentials.getPerson().getEmail())
+        .build();
   }
 
   public void checkPersonAccount(Credentials credentials) {
@@ -96,7 +79,7 @@ public class AccountService {
   }
 
   @Transactional
-  public boolean resetPassword(String token, ChangePasswordRequest changePasswordRequest) {
+  public boolean resetPassword(String token, ResetPasswordRequest resetPasswordRequest) {
 
     if (jwtUtils.validateJwtToken(token)) {
       var login = jwtUtils.getLoginFromJwtToken(token);
@@ -105,7 +88,7 @@ public class AccountService {
               .findByLogin(login)
               .orElseThrow(() -> new NotFoundException("Not found person with this login"));
       checkPersonAccount(credentials);
-      credentials.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+      credentials.setPassword(passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
       credentialsRepository.save(credentials);
     } else {
       throw new InvalidTokenException("Token is not valid");

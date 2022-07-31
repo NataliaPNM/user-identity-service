@@ -49,7 +49,7 @@ public class AccountService {
     checkPersonAccount(credentials);
 
     var link =
-        IOUtils.toString(new FileInputStream("src/main/resources/password-recovery-link.html"));
+        IOUtils.toString(new FileInputStream("src/main/java/com/example/password-recovery-link.html"));
 
     kafkaTemplate.send(
         "password-recovery",

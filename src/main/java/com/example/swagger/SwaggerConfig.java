@@ -26,9 +26,11 @@ public class SwaggerConfig {
                         .bearerFormat("JWT")))
         .info(
             new Info()
-                .title("Auth-service")
+                .title("User-identity-service")
                 .description(
-                    "Сервис для авторизации пользователя, обновления токена и смены пароля")
+                    "The service stores basic information about the user and his account settings. And provides access to:\n"
+                        + "- authorization and authentication;\n- password recovery;"
+                        + "\n- receipt of a new pair of tokens;\n- CRUD operations for the user account;\n- change notification settings;")
                 .version("v0.0.1"));
   }
 }

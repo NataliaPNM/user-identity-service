@@ -12,6 +12,9 @@ import com.example.security.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -31,6 +34,8 @@ import static org.mockito.Mockito.when;
 @Slf4j
 public class AuthServiceTest {
   @InjectMocks private AuthService authService;
+  @Captor
+  private Credentials credentials;
   @Mock private JwtUtils jwtUtils;
   @Mock private AuthenticationManager authenticationManager;
   @Mock private CredentialsRepository credentialsRepository;
@@ -221,4 +226,12 @@ public class AuthServiceTest {
             getChangePasswordRequest("newPassword", "d6d83746-d862-4562-99d4-4ec5a664a59a"));
     assertEquals(getChangePasswordResult(), actualResult);
   }
+
+//  @ParameterizedTest
+//  @ValueSource(ints = { 1, 2, 3 })
+//  void testParameterized(int i){
+//    System.out.println(i);
+//
+//  }
+
 }

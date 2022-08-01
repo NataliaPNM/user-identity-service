@@ -1,9 +1,9 @@
 package com.example.controller;
 
 import com.example.AuthorizationServiceApplication;
-import com.example.security.JwtPerson;
-import com.example.security.JwtUtils;
-import com.example.service.AuthService;
+import com.example.security.userdetails.JwtUserDetails;
+import com.example.util.JwtUtil;
+import com.example.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
 import org.springframework.core.MethodParameter;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
@@ -40,8 +39,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 class AuthControllerIntegrationTest {
 
   @Autowired private AuthController authController;
-  @MockBean private AuthService authService;
-  @MockBean private JwtUtils jwtUtils;
+  @MockBean private AuthenticationService authenticationService;
+  @MockBean private JwtUtil jwtUtil;
   @Autowired private ObjectMapper mapper;
 
   @Autowired private MockMvc mockMvc;
@@ -56,7 +55,7 @@ class AuthControllerIntegrationTest {
 
   @Test
   void signInStatusOkTest() throws Exception {
-    when(authService.login(getLoginRequest("postgres", "postgres")))
+    when(authenticationService.login(getLoginRequest("postgres", "postgres")))
         .thenReturn(getLoginResponseDto("eyJhbGciOiJI", "UCkErJNzC0rcAd", 0, 0, UUID.fromString("d6d83746-d862-4562-99d4-4ec5a664a59a")));
     mockMvc
         .perform(
@@ -76,7 +75,7 @@ class AuthControllerIntegrationTest {
 
   @Test
   void refreshTokenStatusOkTest() throws Exception {
-    when(authService.refreshJwt(getRequestNewTokensDto("UCkErJNzC0rcAd")))
+    when(authenticationService.refreshJwt(getRequestNewTokensDto("UCkErJNzC0rcAd")))
         .thenReturn(getLoginResponseDto("XOFsm1P2tSDo", "P3yzy8a91ixRrB", 0, 0,UUID.fromString("d6d83746-d862-4562-99d4-4ec5a664a59a")));
     mockMvc
         .perform(
@@ -97,7 +96,7 @@ class AuthControllerIntegrationTest {
   @Test
   void validateTokenStatusOkTest() throws Exception {
     boolean expectedResult = true;
-    when(jwtUtils.validateJwtToken("token")).thenReturn(expectedResult);
+    when(jwtUtil.validateJwtToken("token")).thenReturn(expectedResult);
     mockMvc
         .perform(
             post("/auth/validateToken").header("Authorization","Bearer token")
@@ -114,7 +113,7 @@ class AuthControllerIntegrationTest {
   @Test
   void changePasswordStatusOkTest() throws Exception {
 
-    given(authService.changePassword(getChangePasswordRequest("newPassword", getUUID().toString())))
+    given(authenticationService.changePassword(getChangePasswordRequest("newPassword", getUUID().toString())))
         .willReturn(getChangePasswordResult());
     mockMvc
         .perform(
@@ -136,7 +135,7 @@ class AuthControllerIntegrationTest {
       new HandlerMethodArgumentResolver() {
         @Override
         public boolean supportsParameter(MethodParameter parameter) {
-          return parameter.getParameterType().isAssignableFrom(JwtPerson.class);
+          return parameter.getParameterType().isAssignableFrom(JwtUserDetails.class);
         }
 
         @Override
@@ -146,7 +145,7 @@ class AuthControllerIntegrationTest {
             NativeWebRequest webRequest,
             WebDataBinderFactory binderFactory) {
           ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
-          return new JwtPerson(
+          return new JwtUserDetails(
               getUUID(), 89999999L, "test", "test", "login", "password", authorities);
         }
       };

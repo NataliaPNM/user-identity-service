@@ -11,8 +11,7 @@ import com.example.model.*;
 import com.example.repository.CredentialsRepository;
 import com.example.repository.NotificationSettingsRepository;
 import com.example.repository.PersonRepository;
-import com.example.security.JwtUtils;
-import io.micrometer.core.instrument.util.IOUtils;
+import com.example.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +23,8 @@ import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static com.example.util.TimeUtil.getUnlockTimeInMs;
+
 @Service
 @RequiredArgsConstructor
 public class AccountService {
@@ -32,7 +33,7 @@ public class AccountService {
   private final PersonRepository personRepository;
   private final NotificationSettingsRepository notificationSettingsRepository;
   private final KafkaTemplate<String, PasswordRecoveryNotificationRequest> kafkaTemplate;
-  private final JwtUtils jwtUtils;
+  private final JwtUtil jwtUtils;
   private final NotificationSettingsService notificationSettingsService;
 
   @Transactional(
@@ -163,13 +164,10 @@ public class AccountService {
           "Your account is not verified, the operation is not available");
     } else if (credentials.isLock()) {
       throw new PersonAccountLockedException(
-          notificationSettingsService.getUnlockTimeInMs(
-              LocalDateTime.parse(credentials.getLockTime())));
+              getUnlockTimeInMs(LocalDateTime.parse(credentials.getLockTime())));
     } else if (credentials.getPerson().getNotificationSettings().getEmailLock()) {
       throw new DefaultConfirmationTypeLockedException(
-          notificationSettingsService.getUnlockTimeInMs(
-              LocalDateTime.parse(
-                  credentials.getPerson().getNotificationSettings().getEmailLockTime())));
+          getUnlockTimeInMs(LocalDateTime.parse(credentials.getPerson().getNotificationSettings().getEmailLockTime())));
     }
   }
 
@@ -220,19 +218,14 @@ public class AccountService {
   public CreatePersonResponseDto createPerson(CreatePersonRequest createPersonRequest) {
     credentialsRepository
         .findByLogin(createPersonRequest.getLogin())
-        .ifPresent(
-            (c) -> {
-              throw new PersonWithThisLoginOrEmailAlreadyExistsException(
-                  "User with this login already exists");
-            });
+        .ifPresent(person -> {
+          throw new PersonWithThisLoginOrEmailAlreadyExistsException("User with this login already exists");});
 
     personRepository
         .findByEmail(createPersonRequest.getEmail())
-        .ifPresent(
-            (c) -> {
-              throw new PersonWithThisLoginOrEmailAlreadyExistsException(
-                  "User with this email already exists");
-            });
+        .ifPresent(person -> {
+              throw new PersonWithThisLoginOrEmailAlreadyExistsException("User with this email already exists");});
+
     NotificationSettings notificationSettings =
         NotificationSettings.builder()
             .confirmationLock(ConfirmationLock.NONE)

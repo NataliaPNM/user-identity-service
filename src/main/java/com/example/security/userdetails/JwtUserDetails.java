@@ -1,4 +1,4 @@
-package com.example.security;
+package com.example.security.userdetails;
 
 import com.example.model.Credentials;
 import com.example.model.Person;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-public class JwtPerson implements UserDetails {
+public class JwtUserDetails implements UserDetails {
 
   private UUID id;
   private Long phone;
@@ -23,7 +23,7 @@ public class JwtPerson implements UserDetails {
   private static boolean nonLocked;
   private Collection<? extends GrantedAuthority> authorities;
 
-  public JwtPerson(
+  public JwtUserDetails(
       UUID id,
       Long phone,
       String username,
@@ -40,11 +40,11 @@ public class JwtPerson implements UserDetails {
     this.authorities = authorities;
   }
 
-  public static JwtPerson build(Person person, Credentials credentials) {
+  public static JwtUserDetails build(Person person, Credentials credentials) {
     List<GrantedAuthority> authorities =
         List.of(new SimpleGrantedAuthority(person.getRole().name()));
     nonLocked = !credentials.isLock();
-    return new JwtPerson(
+    return new JwtUserDetails(
         person.getPersonId(),
         person.getPhone(),
         person.getName(),

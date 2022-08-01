@@ -8,6 +8,7 @@ import com.example.dto.response.error.*;
 import com.example.service.AccountService;
 import com.example.service.AuthenticationService;
 import com.example.util.JwtUtil;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -213,5 +214,11 @@ public class AuthController {
       @RequestBody ResetPasswordRequest resetPasswordRequest) {
     var header = token.split(" ");
     return accountService.resetPassword(header[1], resetPasswordRequest);
+  }
+  @GetMapping("/getPersonId")
+  @Hidden
+  public String getUserIdFromToken(@RequestHeader(AUTHORIZATION) String token) {
+    var header = token.split(" ");
+    return accountService.getPersonIdFromLogin(header[1]);
   }
 }

@@ -34,7 +34,7 @@ public class AccountService {
   private final NotificationSettingsRepository notificationSettingsRepository;
   private final KafkaTemplate<String, PasswordRecoveryNotificationRequest> kafkaTemplate;
   private final JwtUtil jwtUtils;
-  private final NotificationSettingsService notificationSettingsService;
+  private final CredentialsService credentialsService;
 
   @Transactional(
       transactionManager = "kafkaTransactionManagerForPasswordRecoveryNeeds",
@@ -170,7 +170,14 @@ public class AccountService {
           getUnlockTimeInMs(LocalDateTime.parse(credentials.getPerson().getNotificationSettings().getEmailLockTime())));
     }
   }
-
+  public String getPersonIdFromLogin(String token){
+    if(jwtUtils.validateJwtToken(token)){
+      var login = jwtUtils.getLoginFromJwtToken(token);
+      var credentials = credentialsService.findByLogin(login);
+      return credentials.getPerson().getPersonId().toString();
+    }
+    throw new InvalidTokenException("Token is not valid");
+  }
   @Transactional
   public boolean resetPassword(String token, ResetPasswordRequest resetPasswordRequest) {
 

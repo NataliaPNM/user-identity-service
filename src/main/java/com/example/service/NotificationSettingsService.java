@@ -22,10 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import static com.example.util.TimeUtil.getUnlockTimeInMs;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +44,7 @@ public class NotificationSettingsService {
       if (LocalDateTime.parse(person.getNotificationSettings().getEmailLockTime())
           .isAfter(LocalDateTime.now())) {
         throw new OperationNotAvailableException(
-            getUnlockTimeInMs(LocalDateTime.parse(person.getNotificationSettings().getEmailLockTime())));
+                getUnlockTimeInMs(LocalDateTime.parse(person.getNotificationSettings().getEmailLockTime())));
       }
       person.getNotificationSettings().setConfirmationLock(ConfirmationLock.EMAIL_LOCK);
       person.getNotificationSettings().setEmailLockTime("");
@@ -91,8 +92,7 @@ public class NotificationSettingsService {
           .getNotificationSettings()
           .getDefaultTypeOfConfirmation()
           .equals(setDefaultNotificationTypeRequest.getNewDefaultType())) {
-        throw new IncorrectDefaultNotificationTypeException(
-            "This is already default confirmation type");
+        throw new IncorrectDefaultNotificationTypeException("This is already default confirmation type");
       }
       var locks = getPersonConfirmationLocks(person.getPersonId());
 
@@ -203,8 +203,5 @@ public class NotificationSettingsService {
     var operationConfirm = consumerRecord.value();
     updateNotificationTypeStatus(operationConfirm);
   }
-  public String getUnlockTimeInMs(LocalDateTime to){
 
-    return String.valueOf(ChronoUnit.MILLIS.between(LocalDateTime.now(), to));
-  }
 }

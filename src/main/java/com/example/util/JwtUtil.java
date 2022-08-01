@@ -1,12 +1,11 @@
-package com.example.security;
+package com.example.util;
 
-import com.example.repository.CredentialsRepository;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.example.security.userdetails.JwtUserDetails;
+import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -17,7 +16,7 @@ import java.util.Date;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JwtUtils {
+public class JwtUtil {
 
   @Value("${jwtSecret}")
   private String jwtSecret;
@@ -28,12 +27,9 @@ public class JwtUtils {
   @Value("${jwtRefreshExpirationMs}")
   private int jwtRefreshExpirationMs = 1200000;
 
-  private final CredentialsRepository credentialsRepository;
-
   public String generateJwtToken(Authentication authentication) {
-
-    JwtPerson userPrincipal = (JwtPerson) authentication.getPrincipal();
-    return generateJwtToken(userPrincipal.getLogin(),jwtExpirationMs);
+    JwtUserDetails userPrincipal = (JwtUserDetails) authentication.getPrincipal();
+    return generateJwtToken(userPrincipal.getLogin(), jwtExpirationMs);
   }
 
   public String generateJwtToken(String login, int jwtExpirationMs) {
@@ -46,8 +42,8 @@ public class JwtUtils {
   }
 
   public String generateRefreshToken(Authentication authentication) {
-    JwtPerson userPrincipal = (JwtPerson) authentication.getPrincipal();
-    return generateRefreshToken(userPrincipal.getLogin(),jwtRefreshExpirationMs);
+    JwtUserDetails userPrincipal = (JwtUserDetails) authentication.getPrincipal();
+    return generateRefreshToken(userPrincipal.getLogin(), jwtRefreshExpirationMs);
   }
 
   public String generateRefreshToken(String login,int jwtRefreshExpirationMs) {
@@ -75,7 +71,7 @@ public class JwtUtils {
   }
 
   public String parseJwt(HttpServletRequest request) {
-    var headerAuth = request.getHeader("Authorization");
+    var headerAuth = request.getHeader(HttpHeaders.AUTHORIZATION);
     return parseJwt(headerAuth);
   }
 
@@ -85,4 +81,24 @@ public class JwtUtils {
     }
     return null;
   }
+
+  public boolean doesRequestHasAuthorizationHeader(HttpServletRequest request) {
+    return request.getHeader(HttpHeaders.AUTHORIZATION) != null;
+  }
+
+  public boolean isAuthorizationTypeBearer(HttpServletRequest request) {
+    return request.getHeader(HttpHeaders.AUTHORIZATION).startsWith("Bearer ");
+  }
+
+  public boolean isJwtToken(String authToken) throws JwtException {
+    Claims claims = getJwtClaims(authToken);
+    return claims != null;
+  }
+
+  public Claims getJwtClaims(String authToken) {
+    return Jwts.parser()
+            .setSigningKey(jwtSecret)
+            .parseClaimsJws(authToken)
+            .getBody();
+    }
 }

@@ -8,3 +8,7 @@ spring:
       password: a1s21a2s
       fail-fast: true
 
+logging:
+  level:
+    com.example.service: ERROR
+    com.example.security: ERROR

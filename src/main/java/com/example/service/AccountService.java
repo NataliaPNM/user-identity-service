@@ -47,7 +47,7 @@ public class AccountService {
             .orElseThrow(() -> new NotFoundException("Not found person with this login"));
     var recoveryToken = jwtUtils.generateJwtToken(recoveryRequest.getLogin(), 300000);
     checkPersonAccount(credentials);
-
+    // temporary issues, will be removed
     var link =
         "<html lang='\\\"en\\\"'><head>\n"
             + "            <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">\n"

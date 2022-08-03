@@ -107,7 +107,6 @@ public class PersonController {
                           description = "Invalid operation id",
                           content = @Content(
                                   mediaType = "application/json",
-                                  // "message": "Not found operation with this id"
                                   schema = @Schema(implementation = NotFoundErrorResponse.class))),
           })
   public Map<String, String> getPersonLocks(String personId) {

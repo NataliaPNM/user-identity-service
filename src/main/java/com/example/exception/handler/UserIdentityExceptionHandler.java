@@ -40,13 +40,13 @@ public class UserIdentityExceptionHandler extends ResponseEntityExceptionHandler
   protected ResponseEntity<Object> handleNotFoundException(
       NotFoundException ex, WebRequest request) {
     NotFoundErrorResponse response = NotFoundErrorResponse.builder()
-            .status(String.valueOf(HttpStatus.PRECONDITION_REQUIRED.value()))
-            .error("Precondition Required")
+            .status(String.valueOf(HttpStatus.NOT_FOUND.value()))
+            .error("Not found")
             .personId(ex.getMessage())
             .build();
 
     return handleExceptionInternal(
-        ex, response, new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY, request);
+        ex, response, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
   }
 
   @ExceptionHandler(value = {PersonAccountLockedException.class})

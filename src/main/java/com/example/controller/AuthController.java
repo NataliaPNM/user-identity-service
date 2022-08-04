@@ -188,10 +188,10 @@ public class AuthController {
           description = "Requires an authorization header with the token that was received in the link")
   @ApiResponses(value = {
           @ApiResponse(responseCode = "200",
-                  description = "Returns \"true\" if password reset was successful",
+                  description = "Returns tokens if password reset was successful",
                   content = @Content(
                           mediaType = "application/json",
-                          schema = @Schema(implementation = Boolean.class))),
+                          schema = @Schema(implementation = LoginResponseDto.class))),
           @ApiResponse(responseCode = "400",
                   description = "Invalid token. Provided token is invalid or malformed.",
                   content = @Content(
@@ -209,7 +209,7 @@ public class AuthController {
                           schema = @Schema(implementation = PersonAccountLockedErrorResponse.class)))
   })
   @PostMapping("/resetPassword")
-  public Boolean resetPassword(
+  public LoginResponseDto resetPassword(
       @RequestHeader(AUTHORIZATION) String token,
       @RequestBody ResetPasswordRequest resetPasswordRequest) {
     var header = token.split(" ");

@@ -1,10 +1,8 @@
 package com.example.service;
 
-import com.example.dto.request.CreatePersonRequest;
-import com.example.dto.request.PasswordRecoveryNotificationRequest;
-import com.example.dto.request.PasswordRecoveryRequest;
-import com.example.dto.request.ResetPasswordRequest;
+import com.example.dto.request.*;
 import com.example.dto.response.CreatePersonResponseDto;
+import com.example.dto.response.LoginResponseDto;
 import com.example.dto.response.SetDefaultConfirmationTypeResponse;
 import com.example.exception.*;
 import com.example.model.*;
@@ -14,6 +12,7 @@ import com.example.repository.PersonRepository;
 import com.example.util.FileUtil;
 import com.example.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,11 +35,17 @@ public class AccountService {
   private final KafkaTemplate<String, PasswordRecoveryNotificationRequest> kafkaTemplate;
   private final JwtUtil jwtUtils;
   private final CredentialsService credentialsService;
-
+  private final AuthenticationService authenticationService;
+  private final LoginAttemptService loginAttemptService;
   private final FileUtil fileUtil;
   private final String RECOVERY_PAGE_FILE = "classpath:files/password-recovery-link.html";
   private final String RECOVERY_TOKEN_BODY_TAG = "%recovery_token_body%";
 
+  @Value("${jwtExpirationMs}")
+  private int jwtExpirationMs;
+
+  @Value("${jwtRefreshExpirationMs}")
+  private int jwtRefreshExpirationMs;
 
   @Transactional(
       transactionManager = "kafkaTransactionManagerForPasswordRecoveryNeeds",
@@ -54,8 +59,8 @@ public class AccountService {
     var recoveryToken = jwtUtils.generateJwtToken(recoveryRequest.getLogin(), 300000);
     checkPersonAccount(credentials);
 
-    //read html file content into a String
-    //and replace all %recovery_token_body% with an actual token
+    // read html file content into a String
+    // and replace all %recovery_token_body% with an actual token
     String link = fileUtil.getFileDataAsString(RECOVERY_PAGE_FILE);
     link = link.replaceAll(RECOVERY_TOKEN_BODY_TAG, recoveryToken);
 
@@ -76,22 +81,26 @@ public class AccountService {
           "Your account is not verified, the operation is not available");
     } else if (credentials.isLock()) {
       throw new PersonAccountLockedException(
-              getUnlockTimeInMs(LocalDateTime.parse(credentials.getLockTime())));
+          getUnlockTimeInMs(LocalDateTime.parse(credentials.getLockTime())));
     } else if (credentials.getPerson().getNotificationSettings().getEmailLock()) {
       throw new DefaultConfirmationTypeLockedException(
-          getUnlockTimeInMs(LocalDateTime.parse(credentials.getPerson().getNotificationSettings().getEmailLockTime())));
+          getUnlockTimeInMs(
+              LocalDateTime.parse(
+                  credentials.getPerson().getNotificationSettings().getEmailLockTime())));
     }
   }
-  public String getPersonIdFromLogin(String token){
-    if(jwtUtils.validateJwtToken(token)){
+
+  public String getPersonIdFromLogin(String token) {
+    if (jwtUtils.validateJwtToken(token)) {
       var login = jwtUtils.getLoginFromJwtToken(token);
       var credentials = credentialsService.findByLogin(login);
       return credentials.getPerson().getPersonId().toString();
     }
     throw new InvalidTokenException("Token is not valid");
   }
+
   @Transactional
-  public boolean resetPassword(String token, ResetPasswordRequest resetPasswordRequest) {
+  public LoginResponseDto resetPassword(String token, ResetPasswordRequest resetPasswordRequest) {
 
     if (jwtUtils.validateJwtToken(token)) {
       var login = jwtUtils.getLoginFromJwtToken(token);
@@ -101,11 +110,25 @@ public class AccountService {
               .orElseThrow(() -> new NotFoundException("Not found person with this login"));
       checkPersonAccount(credentials);
       credentials.setPassword(passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
+      var refreshJwt = jwtUtils.generateRefreshToken(login, jwtRefreshExpirationMs);
+      credentials.setRefreshToken(refreshJwt);
       credentialsRepository.save(credentials);
+      loginAttemptService.evictUserFromLoginAttemptCache(login);
+      return LoginResponseDto.builder()
+          .token(jwtUtils.generateJwtToken(login, jwtExpirationMs))
+          .refreshToken(refreshJwt)
+          .accessTokenExpirationTime(jwtExpirationMs)
+          .refreshTokenExpirationTime(jwtRefreshExpirationMs)
+          .personId(credentials.getPerson().getPersonId())
+          .build();
     } else {
       throw new InvalidTokenException("Token is not valid");
     }
-    return true;
+  }
+
+  @Transactional(propagation = Propagation.NESTED)
+  public LoginResponseDto loginAfterReset(LoginRequest loginRequest) {
+    return authenticationService.login(loginRequest);
   }
 
   public void resetPerson(UUID personId) {
@@ -137,13 +160,19 @@ public class AccountService {
   public CreatePersonResponseDto createPerson(CreatePersonRequest createPersonRequest) {
     credentialsRepository
         .findByLogin(createPersonRequest.getLogin())
-        .ifPresent(person -> {
-          throw new PersonWithThisLoginOrEmailAlreadyExistsException("User with this login already exists");});
+        .ifPresent(
+            person -> {
+              throw new PersonWithThisLoginOrEmailAlreadyExistsException(
+                  "User with this login already exists");
+            });
 
     personRepository
         .findByEmail(createPersonRequest.getEmail())
-        .ifPresent(person -> {
-              throw new PersonWithThisLoginOrEmailAlreadyExistsException("User with this email already exists");});
+        .ifPresent(
+            person -> {
+              throw new PersonWithThisLoginOrEmailAlreadyExistsException(
+                  "User with this email already exists");
+            });
 
     NotificationSettings notificationSettings =
         NotificationSettings.builder()

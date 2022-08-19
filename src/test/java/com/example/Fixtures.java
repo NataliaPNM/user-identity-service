@@ -126,7 +126,7 @@ public class Fixtures {
         .personId(UUID.fromString(personId))
         .patronymic(patronymic)
         .email(email)
-        .role(role).passport(getPassport()).residentialAddress(Address.builder().build())
+        .role(role).residentialAddress(Address.builder().build())
         .build();
   }
 }

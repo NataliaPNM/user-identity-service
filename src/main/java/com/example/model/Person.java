@@ -39,10 +39,6 @@ public class Person {
   @JoinColumn(name = "address_id")
   private Address residentialAddress;
 
-  @OneToOne(optional = false, cascade = CascadeType.ALL)
-  @JoinColumn(name = "passport_id")
-  private Passport passport;
-
   @Enumerated(EnumType.STRING)
   private PersonRole role;
 

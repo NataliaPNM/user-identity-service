@@ -13,10 +13,7 @@ import com.example.model.NotificationSettings;
 import com.example.model.Person;
 import com.example.model.enums.ConfirmationLock;
 import com.example.model.enums.PersonRole;
-import com.example.repository.AddressRepository;
-import com.example.repository.CredentialsRepository;
-import com.example.repository.NotificationSettingsRepository;
-import com.example.repository.PersonRepository;
+import com.example.repository.*;
 import com.example.util.FileUtil;
 import com.example.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -39,6 +35,7 @@ public class AccountService {
   private final PasswordEncoder passwordEncoder;
   private final CredentialsRepository credentialsRepository;
   private final PersonRepository personRepository;
+  private final PassportRepository passportRepository;
   private final AddressRepository addressRepository;
   private final NotificationSettingsRepository notificationSettingsRepository;
   private final NotificationSettingsService notificationSettingsService;
@@ -60,7 +57,8 @@ public class AccountService {
   @Transactional(
       transactionManager = "kafkaTransactionManagerForPasswordRecoveryNeeds",
       propagation = Propagation.REQUIRED)
-  public SetDefaultConfirmationTypeResponse recoverPassword(PasswordRecoveryRequest recoveryRequest){
+  public SetDefaultConfirmationTypeResponse recoverPassword(
+      PasswordRecoveryRequest recoveryRequest) {
     var credentials =
         credentialsRepository
             .findByLogin(recoveryRequest.getLogin())
@@ -165,12 +163,13 @@ public class AccountService {
   }
 
   public PersonalDataResponseDto getPersonPersonalData(String personId) {
-    var person =
-        personRepository
-            .findById(UUID.fromString(personId))
+
+    var passport =
+        passportRepository
+            .findByPersonId(UUID.fromString(personId))
             .orElseThrow(() -> new NotFoundException("Person with this id not found"));
 
-    return personalDataResponseDtoMapper.toPersonalDataResponseDto(person);
+    return personalDataResponseDtoMapper.toPersonalDataResponseDto(passport);
   }
 
   public Address getResidentialAddress(UUID personId) {

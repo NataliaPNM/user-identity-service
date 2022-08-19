@@ -1,6 +1,5 @@
 package com.example.model;
 
-import com.example.model.enums.ConfirmationLock;
 import lombok.*;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.GenericGenerator;
@@ -15,39 +14,39 @@ import java.util.UUID;
 @Setter
 @ToString
 @Entity
-@Table(name = "notification_settings")
+@Table(name = "passport")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationSettings {
-  @Enumerated(EnumType.STRING)
-  public ConfirmationLock confirmationLock;
-
+public class Passport {
   @Id
   @EqualsAndHashCode.Exclude
   @GeneratedValue(generator = "UUID")
   @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-  private UUID notificationSettingsId;
+  private UUID passportId;
 
-  private String defaultTypeOfConfirmation;
-  private Boolean emailLock;
-  private String emailLockTime;
-  private Boolean pushLock;
-  private String pushLockTime;
+  private String dateOfBirth;
+  private String serialNumber;
+  private String departmentCode;
+  private String departmentIssued;
 
-  @OneToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
-  @JoinColumn(name = "person_id")
+  @OneToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
+  @JoinColumn(name = "address_id")
   @ToString.Exclude
   @OnDelete(action = OnDeleteAction.CASCADE)
+  private Address registrationAddress;
+
+  @OneToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+  @JoinColumn(name = "person_id")
+  @ToString.Exclude
   private Person person;
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-    NotificationSettings that = (NotificationSettings) o;
-    return notificationSettingsId != null
-        && Objects.equals(notificationSettingsId, that.notificationSettingsId);
+    Passport passport = (Passport) o;
+    return passportId != null && Objects.equals(passportId, passport.passportId);
   }
 
   @Override

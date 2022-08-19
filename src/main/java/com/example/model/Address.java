@@ -4,7 +4,10 @@ import lombok.*;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -12,33 +15,31 @@ import java.util.UUID;
 @Setter
 @ToString
 @Entity
-@Table(name = "person_operation")
+@Table(name = "address")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PersonOperation {
-
+public class Address {
   @Id
   @EqualsAndHashCode.Exclude
   @GeneratedValue(generator = "UUID")
   @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-  private UUID personOperationId;
+  private UUID addressId;
 
-  @ManyToOne
-  @JoinColumn(name = "person_id")
-  private Person person;
-
-  private String operationType;
-  private String confirmationType;
-  private String operationExpirationTime;
+  private String country;
+  private String city;
+  private String street;
+  private Integer postalCode;
+  private Integer house;
+  private Integer flat;
+  private Integer block;
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-    PersonOperation operation = (PersonOperation) o;
-    return personOperationId != null
-        && Objects.equals(personOperationId, operation.personOperationId);
+    Address address = (Address) o;
+    return addressId != null && Objects.equals(addressId, address.addressId);
   }
 
   @Override

@@ -2,7 +2,7 @@ package com.example.security;
 
 import com.example.model.Credentials;
 import com.example.model.Person;
-import com.example.model.PersonRole;
+import com.example.model.enums.PersonRole;
 import com.example.repository.CredentialsRepository;
 import com.example.security.exceptionhandler.AuthenticationEntryPoint;
 import com.example.security.userdetails.JwtUserDetails;

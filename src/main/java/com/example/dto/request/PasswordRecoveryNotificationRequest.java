@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class PasswordRecoveryNotificationRequest {
-    String email;
-    String link;
+    String contact;
+    String body;
 
 }

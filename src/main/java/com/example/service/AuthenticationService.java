@@ -135,6 +135,7 @@ public class AuthenticationService {
   public void checkAccountVerification(Credentials credentials) {
     if (!credentials.isAccountVerified()) {
       notificationSettingsService.checkPersonConfirmationFullLock(credentials.getPerson());
+
       throw new AccountConfirmationRequiredException(
           credentials.getPerson().getPersonId().toString());
     }

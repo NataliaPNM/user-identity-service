@@ -5,16 +5,19 @@ import com.example.dto.request.LoginRequest;
 import com.example.dto.request.NewTokensRequest;
 import com.example.dto.response.ChangePasswordResponseDto;
 import com.example.dto.response.LoginResponseDto;
+import com.example.dto.response.PersonalDataResponseDto;
+import com.example.model.Address;
 import com.example.model.Credentials;
+import com.example.model.Passport;
 import com.example.model.Person;
-import com.example.model.PersonRole;
+import com.example.model.enums.PersonRole;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 
 import java.util.UUID;
-
+// @RequiredArgsConstructor
 public class Fixtures {
-
+  //  private static  PersonalDataResponseDtoMapper personalDataResponseDtoMapper;
   public static LoginRequest getLoginRequest(String login, String password) {
     return LoginRequest.builder().login(login).password(password).build();
   }
@@ -28,6 +31,23 @@ public class Fixtures {
         .contact("mihant91@gmail.com")
         .build();
   }
+
+//  public static PersonalDataResponseDto getPersonalDataResponseDto(String personId) {
+//    return PersonalDataResponseDto.builder()
+//        .personId(UUID.fromString(personId))
+//        .dateOfBirth()
+//        .departmentCode()
+//        .email()
+//        .name()
+//        .registrationAddress()
+//        .residentialAddress()
+//        .serialNumber()
+//        .departmentIssued()
+//        .patronymic()
+//        .phone()
+//        .surname()
+//        .build();
+//  }
 
   public static UUID getUUID() {
     return UUID.fromString("f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454");
@@ -88,7 +108,9 @@ public class Fixtures {
   public static Person getPersonWithoutData() {
     return Person.builder().build();
   }
-
+  public static Passport getPassport(){
+     return Passport.builder().build();
+  }
   public static Person getPerson(
       Long phone,
       String surname,
@@ -104,7 +126,7 @@ public class Fixtures {
         .personId(UUID.fromString(personId))
         .patronymic(patronymic)
         .email(email)
-        .role(role)
+        .role(role).passport(getPassport()).residentialAddress(Address.builder().build())
         .build();
   }
 }

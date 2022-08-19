@@ -3,9 +3,17 @@ package com.example.service;
 import com.example.dto.request.*;
 import com.example.dto.response.CreatePersonResponseDto;
 import com.example.dto.response.LoginResponseDto;
+import com.example.dto.response.PersonalDataResponseDto;
 import com.example.dto.response.SetDefaultConfirmationTypeResponse;
 import com.example.exception.*;
-import com.example.model.*;
+import com.example.mapper.PersonalDataResponseDtoMapper;
+import com.example.model.Address;
+import com.example.model.Credentials;
+import com.example.model.NotificationSettings;
+import com.example.model.Person;
+import com.example.model.enums.ConfirmationLock;
+import com.example.model.enums.PersonRole;
+import com.example.repository.AddressRepository;
 import com.example.repository.CredentialsRepository;
 import com.example.repository.NotificationSettingsRepository;
 import com.example.repository.PersonRepository;
@@ -31,15 +39,17 @@ public class AccountService {
   private final PasswordEncoder passwordEncoder;
   private final CredentialsRepository credentialsRepository;
   private final PersonRepository personRepository;
+  private final AddressRepository addressRepository;
   private final NotificationSettingsRepository notificationSettingsRepository;
+  private final NotificationSettingsService notificationSettingsService;
   private final KafkaTemplate<String, PasswordRecoveryNotificationRequest> kafkaTemplate;
   private final JwtUtil jwtUtils;
   private final CredentialsService credentialsService;
-  private final AuthenticationService authenticationService;
   private final LoginAttemptService loginAttemptService;
   private final FileUtil fileUtil;
   private final String RECOVERY_PAGE_FILE = "classpath:files/password-recovery-link.html";
   private final String RECOVERY_TOKEN_BODY_TAG = "%recovery_token_body%";
+  private final PersonalDataResponseDtoMapper personalDataResponseDtoMapper;
 
   @Value("${jwtExpirationMs}")
   private int jwtExpirationMs;
@@ -50,8 +60,7 @@ public class AccountService {
   @Transactional(
       transactionManager = "kafkaTransactionManagerForPasswordRecoveryNeeds",
       propagation = Propagation.REQUIRED)
-  public SetDefaultConfirmationTypeResponse recoverPassword(PasswordRecoveryRequest recoveryRequest)
-      throws FileNotFoundException {
+  public SetDefaultConfirmationTypeResponse recoverPassword(PasswordRecoveryRequest recoveryRequest){
     var credentials =
         credentialsRepository
             .findByLogin(recoveryRequest.getLogin())
@@ -67,8 +76,8 @@ public class AccountService {
     kafkaTemplate.send(
         "password-recovery",
         PasswordRecoveryNotificationRequest.builder()
-            .email(credentials.getPerson().getEmail())
-            .link(link)
+            .contact(credentials.getPerson().getEmail())
+            .body(link)
             .build());
     return SetDefaultConfirmationTypeResponse.builder()
         .personContact(credentials.getPerson().getEmail())
@@ -76,17 +85,17 @@ public class AccountService {
   }
 
   public void checkPersonAccount(Credentials credentials) {
+    var notificationSettings =
+        notificationSettingsService.getNotificationSettings(credentials.getPerson().getPersonId());
     if (!credentials.isAccountVerified()) {
       throw new OperationNotAvailableException(
           "Your account is not verified, the operation is not available");
     } else if (credentials.isLock()) {
       throw new PersonAccountLockedException(
           getUnlockTimeInMs(LocalDateTime.parse(credentials.getLockTime())));
-    } else if (credentials.getPerson().getNotificationSettings().getEmailLock()) {
+    } else if (notificationSettings.getEmailLock()) {
       throw new DefaultConfirmationTypeLockedException(
-          getUnlockTimeInMs(
-              LocalDateTime.parse(
-                  credentials.getPerson().getNotificationSettings().getEmailLockTime())));
+          getUnlockTimeInMs(LocalDateTime.parse(notificationSettings.getEmailLockTime())));
     }
   }
 
@@ -126,11 +135,7 @@ public class AccountService {
     }
   }
 
-  @Transactional(propagation = Propagation.NESTED)
-  public LoginResponseDto loginAfterReset(LoginRequest loginRequest) {
-    return authenticationService.login(loginRequest);
-  }
-
+  @Transactional
   public void resetPerson(UUID personId) {
     var credentials =
         credentialsRepository
@@ -141,22 +146,79 @@ public class AccountService {
     credentials.setLockTime("");
     credentials.setTemporaryPassword("");
     credentials.setRefreshToken("");
-    credentials.getPerson().getNotificationSettings().setPushLock(false);
-    credentials.getPerson().getNotificationSettings().setEmailLock(false);
-    credentials.getPerson().getNotificationSettings().setConfirmationLock(ConfirmationLock.NONE);
-    credentials.getPerson().getNotificationSettings().setEmailLockTime("");
-    credentials.getPerson().getNotificationSettings().setPushLockTime("");
+    var notificationSettings = notificationSettingsService.getNotificationSettings(personId);
+    notificationSettings.setPushLock(false);
+    notificationSettings.setEmailLock(false);
+    notificationSettings.setConfirmationLock(ConfirmationLock.NONE);
+    notificationSettings.setEmailLockTime("");
+    notificationSettings.setPushLockTime("");
     credentialsRepository.save(credentials);
+    notificationSettingsRepository.save(notificationSettings);
   }
 
   public void deletePerson(UUID personId) {
-    var credentials =
-        credentialsRepository
-            .findByPersonId(personId)
+    var person =
+        personRepository
+            .findById(personId)
             .orElseThrow(() -> new NotFoundException("Not found such person"));
-    credentialsRepository.delete(credentials);
+    personRepository.delete(person);
   }
 
+  public PersonalDataResponseDto getPersonPersonalData(String personId) {
+    var person =
+        personRepository
+            .findById(UUID.fromString(personId))
+            .orElseThrow(() -> new NotFoundException("Person with this id not found"));
+
+    return personalDataResponseDtoMapper.toPersonalDataResponseDto(person);
+  }
+
+  public Address getResidentialAddress(UUID personId) {
+    var person =
+        personRepository
+            .findById(personId)
+            .orElseThrow(() -> new NotFoundException("Person with this id not found"));
+    return person.getResidentialAddress();
+  }
+
+  public String editResidentialAddress(EditResidentialAddressRequest editRequest) {
+    var person =
+        personRepository
+            .findById(UUID.fromString(editRequest.getPersonId().toString()))
+            .orElseThrow(() -> new NotFoundException("Person with this id not found"));
+
+    var exsistedAddress =
+        addressRepository.findAddressByCountryAndCityAndStreetAndPostalCodeAndHouseAndFlatAndBlock(
+            editRequest.getCountry(),
+            editRequest.getCity(),
+            editRequest.getStreet(),
+            editRequest.getPostalCode(),
+            editRequest.getHouse(),
+            editRequest.getFlat(),
+            editRequest.getBlock());
+
+    if (exsistedAddress.isPresent()) {
+      person.setResidentialAddress(exsistedAddress.get());
+      personRepository.save(person);
+
+    } else {
+      person.setResidentialAddress(
+          Address.builder()
+              .country(editRequest.getCountry())
+              .city(editRequest.getCity())
+              .street(editRequest.getStreet())
+              .postalCode(editRequest.getPostalCode())
+              .house(editRequest.getHouse())
+              .flat(editRequest.getFlat())
+              .block(editRequest.getBlock())
+              .build());
+      personRepository.save(person);
+    }
+
+    return "Residential address updated!";
+  }
+
+  @Transactional
   public CreatePersonResponseDto createPerson(CreatePersonRequest createPersonRequest) {
     credentialsRepository
         .findByLogin(createPersonRequest.getLogin())
@@ -174,16 +236,6 @@ public class AccountService {
                   "User with this email already exists");
             });
 
-    NotificationSettings notificationSettings =
-        NotificationSettings.builder()
-            .confirmationLock(ConfirmationLock.NONE)
-            .defaultTypeOfConfirmation("email")
-            .emailLock(false)
-            .pushLock(false)
-            .pushLockTime("")
-            .emailLockTime("")
-            .build();
-    notificationSettingsRepository.save(notificationSettings);
     Person newPerson =
         Person.builder()
             .role(PersonRole.ROLE_USER)
@@ -192,9 +244,20 @@ public class AccountService {
             .patronymic(createPersonRequest.getPatronymic())
             .surname(createPersonRequest.getSurname())
             .phone(createPersonRequest.getPhone())
-            .notificationSettings(notificationSettings)
             .build();
     personRepository.save(newPerson);
+
+    NotificationSettings notificationSettings =
+        NotificationSettings.builder()
+            .confirmationLock(ConfirmationLock.NONE)
+            .defaultTypeOfConfirmation("email")
+            .emailLock(false)
+            .pushLock(false)
+            .pushLockTime("")
+            .emailLockTime("")
+            .person(newPerson)
+            .build();
+    notificationSettingsRepository.save(notificationSettings);
     Credentials credentials =
         Credentials.builder()
             .temporaryPassword("")

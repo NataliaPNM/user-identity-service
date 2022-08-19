@@ -1,21 +1,23 @@
 package com.example.model;
 
 import lombok.*;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
+import java.util.Objects;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@ToString
 @Entity
 @Table(name = "credentials")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@NamedQuery(
-    name = "getConfirmationCode",
-    query =
-        "select c from Credentials c join fetch c.person join  c.person.notificationSettings where c.login =:login")
 public class Credentials {
 
   @Id
@@ -33,7 +35,22 @@ public class Credentials {
   private boolean lock;
   private String lockTime;
 
-  @OneToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+  @OneToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
   @JoinColumn(name = "person_id")
+  @ToString.Exclude
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Person person;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+    Credentials that = (Credentials) o;
+    return credentialsId != null && Objects.equals(credentialsId, that.credentialsId);
+  }
+
+  @Override
+  public int hashCode() {
+    return getClass().hashCode();
+  }
 }

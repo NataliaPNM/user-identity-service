@@ -2,9 +2,12 @@ package com.example.service;
 
 import com.example.dto.request.NotificationRequestEvent;
 import com.example.dto.request.OperationConfirmEvent;
+import com.example.exception.NotFoundException;
+import com.example.model.NotificationSettings;
 import com.example.model.Person;
 import com.example.model.PersonOperation;
 import com.example.repository.CredentialsRepository;
+import com.example.repository.NotificationSettingsRepository;
 import com.example.repository.PersonOperationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -20,6 +23,7 @@ public class PersonOperationService {
 
   private final CredentialsRepository credentialsRepository;
   private final PersonOperationRepository operationRepository;
+  private final NotificationSettingsRepository notificationSettingsRepository;
   private final KafkaTemplate<String, NotificationRequestEvent> kafkaTemplate;
 
   public void updateOperationRepository() {
@@ -33,12 +37,13 @@ public class PersonOperationService {
   }
 
   public UUID createOperation(Person person, String operationType) {
+    var personSettings = notificationSettingsRepository.findByPerson(person.getPersonId()).orElseThrow(()-> new NotFoundException("Not found notification settings for this person"));
     updateOperationRepository();
     operationRepository
         .findByPersonId(
             person.getPersonId(),
             operationType,
-            person.getNotificationSettings().getDefaultTypeOfConfirmation())
+             personSettings.getDefaultTypeOfConfirmation())
         .ifPresent(operationRepository::delete);
 
     return operationRepository
@@ -47,7 +52,7 @@ public class PersonOperationService {
                 .person(person)
                 .operationExpirationTime(LocalDateTime.now().plusHours(1L).toString())
                 .operationType("changeCredentials")
-                .confirmationType(person.getNotificationSettings().getDefaultTypeOfConfirmation())
+                .confirmationType(personSettings.getDefaultTypeOfConfirmation())
                 .build())
         .getPersonOperationId();
   }
@@ -55,7 +60,9 @@ public class PersonOperationService {
   @Transactional(transactionManager = "kafkaTransactionManager")
   public void sendOperationConfirmRequestEvent(UUID operationId, Person person, String topicName) {
     String contact;
-    if (person.getNotificationSettings().getDefaultTypeOfConfirmation().equals("email")) {
+    var personSettings = notificationSettingsRepository.findByPerson(person.getPersonId()).orElseThrow(()-> new NotFoundException("Not found notification settings for this person"));
+
+    if (personSettings.getDefaultTypeOfConfirmation().equals("email")) {
       contact = person.getEmail();
     } else {
       contact = "";
@@ -64,7 +71,7 @@ public class PersonOperationService {
         topicName,
         NotificationRequestEvent.builder()
             .operationId(operationId)
-            .type(person.getNotificationSettings().getDefaultTypeOfConfirmation())
+            .type(personSettings.getDefaultTypeOfConfirmation())
             .contact(contact)
             .personId(person.getPersonId())
             .source("user-identity")

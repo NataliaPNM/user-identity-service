@@ -1,17 +1,19 @@
 package com.example.controller;
 
 import com.example.dto.request.CreatePersonRequest;
+import com.example.dto.request.EditResidentialAddressRequest;
 import com.example.dto.request.SetDefaultNotificationTypeRequest;
 import com.example.dto.response.CreatePersonResponseDto;
 import com.example.dto.response.DefaultConfirmationTypeResponse;
+import com.example.dto.response.PersonalDataResponseDto;
 import com.example.dto.response.SetDefaultConfirmationTypeResponse;
 import com.example.dto.response.error.DefaultConfirmationTypeLockedErrorResponse;
 import com.example.dto.response.error.IncorrectDefaultNotificationTypeErrorResponse;
 import com.example.dto.response.error.NotFoundErrorResponse;
+import com.example.model.Address;
 import com.example.service.AccountService;
 import com.example.service.NotificationSettingsService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -30,56 +32,75 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RefreshScope
 public class PersonController {
-    private final AccountService accountService;
+  private final AccountService accountService;
   private final NotificationSettingsService notificationSettingsService;
 
-    @Operation(summary = "Get default confirmation type",
-            description = "Returns the default way to send a confirmation code for a specific user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "OK",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = DefaultConfirmationTypeResponse.class))),
-            @ApiResponse(responseCode = "422",
-                    description = "Invalid user id",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = NotFoundErrorResponse.class)))
-    })
-    @GetMapping("/defaultConfirmationType")
-    public DefaultConfirmationTypeResponse getDefaultType(String personId) {
+  @Operation(
+      summary = "Get default confirmation type",
+      description = "Returns the default way to send a confirmation code for a specific user")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = DefaultConfirmationTypeResponse.class))),
+        @ApiResponse(
+            responseCode = "422",
+            description = "Invalid user id",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = NotFoundErrorResponse.class)))
+      })
+  @GetMapping("/defaultConfirmationType")
+  public DefaultConfirmationTypeResponse getDefaultType(String personId) {
 
-        return notificationSettingsService.getPersonDefaultNotificationType(UUID.fromString(personId));
-    }
+    return notificationSettingsService.getPersonDefaultNotificationType(UUID.fromString(personId));
+  }
 
-  @Operation(summary = "Set default confirmation type",
-  description = "Change the default way to send the confirmation code")
-  @ApiResponses(value = {
-          @ApiResponse(responseCode = "200",
-                  description = "The default way to send a confirmation code has been changed. " +
-                          "Returns E-Mail of a person the code has been sent to.",
-                  content = @Content(
-                          mediaType = "application/json",
-                          schema = @Schema(implementation = SetDefaultConfirmationTypeResponse.class))),
-          @ApiResponse(responseCode = "422",
-                  description = "Invalid operation id",
-                  content =
-                  @Content(
-                          mediaType = "application/json",
-                          // "message": "Not found operation with this id"
-                          schema = @Schema(implementation = NotFoundErrorResponse.class))),
-          @ApiResponse(responseCode = "400",
-                  description = "Wrong type of verification code sent",
-                  content = @Content(
-                          mediaType = "application/json",
-                          schema = @Schema(implementation = IncorrectDefaultNotificationTypeErrorResponse.class))),
-          @ApiResponse(responseCode = "423",
-                  description = "The selected confirmation method is blocked. Choose another",
-                  content = @Content(
-                          mediaType = "application/json",
-                          schema = @Schema(implementation = DefaultConfirmationTypeLockedErrorResponse.class))),
-  })
+  @Operation(
+      summary = "Set default confirmation type",
+      description = "Change the default way to send the confirmation code")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description =
+                "The default way to send a confirmation code has been changed. "
+                    + "Returns E-Mail of a person the code has been sent to.",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = SetDefaultConfirmationTypeResponse.class))),
+        @ApiResponse(
+            responseCode = "422",
+            description = "Invalid operation id",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = NotFoundErrorResponse.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Wrong type of verification code sent",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema =
+                        @Schema(
+                            implementation = IncorrectDefaultNotificationTypeErrorResponse.class))),
+        @ApiResponse(
+            responseCode = "423",
+            description = "The selected confirmation method is blocked. Choose another",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema =
+                        @Schema(
+                            implementation = DefaultConfirmationTypeLockedErrorResponse.class))),
+      })
   @PostMapping("/setDefaultConfirmationType")
   public SetDefaultConfirmationTypeResponse setDefaultType(
       @Valid @RequestBody SetDefaultNotificationTypeRequest setTypeRequestDto) {
@@ -87,28 +108,34 @@ public class PersonController {
     return notificationSettingsService.setPersonDefaultConfirmationType(setTypeRequestDto);
   }
 
-  @Operation(summary = "Get all blocked confirmation methods",
-  description = "Get a summary of blocked methods for sending a confirmation code")
+  @Operation(
+      summary = "Get all blocked confirmation methods",
+      description = "Get a summary of blocked methods for sending a confirmation code")
   @GetMapping("/getConfirmationLocks")
   @ApiResponses(
-          value = {
-                  @ApiResponse(responseCode = "200",
-                          description = "Returns a list with blocking statuses of ways to send code",
-                          content =
-                          @Content(
-                                  mediaType = "application/json",
-                                  schema = @Schema(implementation = Map.class,
-                                          example =
-                                                  "{\n"
-                                                          + "    \"email\", \"423123\",\n"
-                                                          + "    \"push\", \"12344\"\n"
-                                                          + "}\n"))),
-                  @ApiResponse(responseCode = "422",
-                          description = "Invalid operation id",
-                          content = @Content(
-                                  mediaType = "application/json",
-                                  schema = @Schema(implementation = NotFoundErrorResponse.class))),
-          })
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Returns a list with blocking statuses of ways to send code",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema =
+                        @Schema(
+                            implementation = Map.class,
+                            example =
+                                "{\n"
+                                    + "    \"email\", \"423123\",\n"
+                                    + "    \"push\", \"12344\"\n"
+                                    + "}\n"))),
+        @ApiResponse(
+            responseCode = "422",
+            description = "Invalid operation id",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = NotFoundErrorResponse.class))),
+      })
   public Map<String, String> getPersonLocks(String personId) {
 
     return notificationSettingsService.getPersonConfirmationLocks(UUID.fromString(personId));
@@ -127,6 +154,28 @@ public class PersonController {
   public void deletePerson(String personId) {
 
     accountService.deletePerson(UUID.fromString(personId));
+  }
+
+  @Operation(summary = "Get person`s personal data")
+  @GetMapping("/personalData")
+  public PersonalDataResponseDto getPersonPersonalData(@RequestParam String personId) {
+
+    return accountService.getPersonPersonalData(personId);
+  }
+
+  @Operation(summary = "Edit person`s residential address")
+  @PostMapping("/personalData/edit")
+  public String editPersonPersonalData(
+      @RequestBody EditResidentialAddressRequest editResidentialAddressRequest) {
+
+    return accountService.editResidentialAddress(editResidentialAddressRequest);
+  }
+
+  @Operation(summary = "Get person`s personal data")
+  @GetMapping("/personalData/residentialAddress")
+  public Address getPersonResidentialAddress(@RequestParam String personId) {
+
+    return accountService.getResidentialAddress(UUID.fromString(personId));
   }
 
   @Operation(summary = "Create a new user account")

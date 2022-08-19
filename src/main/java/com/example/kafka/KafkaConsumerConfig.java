@@ -57,6 +57,7 @@ public class KafkaConsumerConfig {
     return factory;
   }
 
+  // CONSUMER FACTORY
   @Bean
   public ConsumerFactory<String, OperationConfirmEvent> consumerFactory() {
     return new DefaultKafkaConsumerFactory<>(

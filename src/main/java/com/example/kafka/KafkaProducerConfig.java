@@ -45,7 +45,7 @@ public class KafkaProducerConfig {
     props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, "user-identity-transactional-id");
     return props;
   }
-
+  // TRANSACTION MANAGER-----------------------------------------------------------------------
   @Bean
   @Primary
   public JpaTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
@@ -58,7 +58,6 @@ public class KafkaProducerConfig {
     return new KafkaTransactionManager<>(producerFactoryTransactional);
   }
 
-
   @Bean(name = "kafkaTransactionManagerForPasswordRecoveryNeeds")
   public KafkaTransactionManager<String, PasswordRecoveryNotificationRequest>
       kafkaTransactionManagerForPasswordRecoveryNeeds(
@@ -67,13 +66,16 @@ public class KafkaProducerConfig {
     return new KafkaTransactionManager<>(producerFactoryTransactional);
   }
 
+  // TRANSACTION
+  // MANAGER-----------------------------------------------------------------------------------
   @Bean
   public KafkaAdmin kafkaAdmin() {
     Map<String, Object> config = new HashMap<>();
     config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
     return new KafkaAdmin(config);
   }
-
+  // PRODUCER
+  // FACTORY-----------------------------------------------------------------------------------------------------------
   @Bean
   public ProducerFactory<String, NotificationRequestEvent> producerFactory() {
     return new DefaultKafkaProducerFactory<>(producerConfigs());
@@ -84,7 +86,8 @@ public class KafkaProducerConfig {
       producerFactoryForPasswordRecoveryNeeds() {
     return new DefaultKafkaProducerFactory<>(producerConfigs());
   }
-
+  // KAFKA
+  // TEMPLATES-----------------------------------------------------------------------------------------------------------
   @Bean
   public KafkaTemplate<String, NotificationRequestEvent> kafkaTemplate(
       final ProducerFactory<String, NotificationRequestEvent> producerFactory) {
@@ -97,6 +100,9 @@ public class KafkaProducerConfig {
           final ProducerFactory<String, PasswordRecoveryNotificationRequest> producerFactory) {
     return new KafkaTemplate<>(producerFactory);
   }
+
+  // KAFKA
+  // TOPICS-----------------------------------------------------------------------------------------------------------
 
   @Bean
   public NewTopic topicForNotificationRequest() {

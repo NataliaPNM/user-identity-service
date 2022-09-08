@@ -1,0 +1,41 @@
+server:
+  port: 8090
+
+jwtSecret: meetingRoomApplicationSecretKey
+jwtExpirationMs: '600000'
+jwtRefreshExpirationMs: '780000'
+authLockTime: '5'
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/authorization-service
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+  sql:
+    init:
+      mode: always
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: send-notification
+      auto-offset-reset: earliest
+  mvc:
+    pathmatch:
+      # Set the PATH matching policy to solve the high version SpringBoot boot Springfox Empty Pointer Anomaly problem,
+      matching-strategy: ant_path_matcher
+#
+#eureka:
+#  client:
+#    fetch-registry: true
+#    register-with-eureka: true
+#    service-url:
+#      defaultZone: ${eureka_url:http://10.10.14.29:8761/eureka}
+#  instance:
+#    hostname: 10.10.14.29
+#    prefer-ip-address: true

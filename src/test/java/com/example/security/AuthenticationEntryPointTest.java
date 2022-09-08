@@ -52,7 +52,6 @@ class AuthenticationEntryPointTest {
     assertEquals(expectedCountOfEntry, countOfEntry);
   }
 
-
   @Test
   @Disabled
   void checkLockReturnLockMessageTest() {
@@ -74,4 +73,5 @@ class AuthenticationEntryPointTest {
     }
     assertEquals(expectedBody, actualBody);
   }
+
 }

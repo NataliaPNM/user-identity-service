@@ -11,11 +11,5 @@ import java.util.UUID;
 public interface AddressRepository extends JpaRepository<Address, UUID> {
 
   Optional<Address> findAddressByCountryAndCityAndStreetAndPostalCodeAndHouseAndFlatAndBlock(
-      String country,
-      String city,
-      String street,
-      Integer postalCode,
-      Integer house,
-      Integer flat,
-      Integer block);
+      String country, String city, String street, Integer postalCode, Integer house, Integer flat, Integer block);
 }

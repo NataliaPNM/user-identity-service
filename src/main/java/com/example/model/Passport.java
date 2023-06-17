@@ -19,38 +19,38 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Passport {
-  @Id
-  @EqualsAndHashCode.Exclude
-  @GeneratedValue(generator = "UUID")
-  @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-  private UUID passportId;
+    @Id
+    @EqualsAndHashCode.Exclude
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    private UUID passportId;
 
-  private String dateOfBirth;
-  private String serialNumber;
-  private String departmentCode;
-  private String departmentIssued;
+    private String dateOfBirth;
+    private String serialNumber;
+    private String departmentCode;
+    private String departmentIssued;
 
-  @OneToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
-  @JoinColumn(name = "address_id")
-  @ToString.Exclude
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private Address registrationAddress;
+    @OneToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
+    @JoinColumn(name = "address_id")
+    @ToString.Exclude
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Address registrationAddress;
 
-  @OneToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-  @JoinColumn(name = "person_id")
-  @ToString.Exclude
-  private Person person;
+    @OneToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @JoinColumn(name = "person_id")
+    @ToString.Exclude
+    private Person person;
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-    Passport passport = (Passport) o;
-    return passportId != null && Objects.equals(passportId, passport.passportId);
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Passport passport = (Passport) o;
+        return passportId != null && Objects.equals(passportId, passport.passportId);
+    }
 
-  @Override
-  public int hashCode() {
-    return getClass().hashCode();
-  }
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

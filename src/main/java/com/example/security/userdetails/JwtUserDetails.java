@@ -14,68 +14,62 @@ import java.util.UUID;
 @Data
 public class JwtUserDetails implements UserDetails {
 
-  private UUID id;
-  private Long phone;
-  private String username;
-  private String surname;
-  private String login;
-  private String password;
-  private static boolean nonLocked;
-  private Collection<? extends GrantedAuthority> authorities;
+    private UUID id;
+    private Long phone;
+    private String username;
+    private String surname;
+    private String login;
+    private String password;
+    private static boolean nonLocked;
+    private Collection<? extends GrantedAuthority> authorities;
 
-  public JwtUserDetails(
-      UUID id,
-      Long phone,
-      String username,
-      String surname,
-      String login,
-      String password,
-      Collection<? extends GrantedAuthority> authorities) {
-    this.id = id;
-    this.phone = phone;
-    this.username = username;
-    this.surname = surname;
-    this.login = login;
-    this.password = password;
-    this.authorities = authorities;
-  }
+    public JwtUserDetails(UUID id, Long phone, String username, String surname, String login, String password,
+            Collection<? extends GrantedAuthority> authorities) {
+        this.id = id;
+        this.phone = phone;
+        this.username = username;
+        this.surname = surname;
+        this.login = login;
+        this.password = password;
+        this.authorities = authorities;
+    }
 
-  public static JwtUserDetails build(Person person, Credentials credentials) {
-    List<GrantedAuthority> authorities =
-        List.of(new SimpleGrantedAuthority(person.getRole().name()));
-    nonLocked = !credentials.isLock();
-    return new JwtUserDetails(
-        person.getPersonId(),
-        person.getPhone(),
-        person.getName(),
-        person.getSurname(),
-        credentials.getLogin(),
-        credentials.getPassword(),
-        authorities);
-  }
+    public static JwtUserDetails build(Person person, Credentials credentials) {
+        List<GrantedAuthority> authorities =
+                List.of(new SimpleGrantedAuthority(person.getRole().name()));
+        nonLocked = !credentials.isLock();
+        return new JwtUserDetails(
+                person.getPersonId(),
+                person.getPhone(),
+                person.getName(),
+                person.getSurname(),
+                credentials.getLogin(),
+                credentials.getPassword(),
+                authorities);
+    }
 
-  @Override
-  public Collection<? extends GrantedAuthority> getAuthorities() {
-    return authorities;
-  }
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
 
-  @Override
-  public boolean isAccountNonExpired() {
-    return true;
-  }
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
-  @Override
-  public boolean isAccountNonLocked() {
-    return nonLocked;
-  }
+    @Override
+    public boolean isAccountNonLocked() {
+        return nonLocked;
+    }
 
-  @Override
-  public boolean isCredentialsNonExpired() {
-    return true;
-  }
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 
-  @Override
-  public boolean isEnabled() {
-    return true;
-  }
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

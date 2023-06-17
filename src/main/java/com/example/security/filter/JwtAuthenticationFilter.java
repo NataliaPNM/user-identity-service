@@ -25,49 +25,46 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-  private final JwtUtil jwtUtil;
-  private final UserDetailsServiceImpl userDetailsService;
+    private final JwtUtil jwtUtil;
+    private final UserDetailsServiceImpl userDetailsService;
 
-  @Override
-  protected void doFilterInternal(
-      @NonNull HttpServletRequest request,
-      @NonNull HttpServletResponse response,
-      @NonNull FilterChain filterChain)
-      throws ServletException, IOException {
+    @Override
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-    //expect to have AUTHORIZATION header and Bearer inside it
-    if (jwtUtil.doesRequestHasAuthorizationHeader(request) &&
-            jwtUtil.isAuthorizationTypeBearer(request)) {
-      try {
-        //All is ok get Jwt token string from the request
-        String jwtToken = jwtUtil.parseJwt(request);
+        //expect to have AUTHORIZATION header and Bearer inside it
+        if (jwtUtil.doesRequestHasAuthorizationHeader(request) &&
+                jwtUtil.isAuthorizationTypeBearer(request)) {
+            try {
+                //All is ok get Jwt token string from the request
+                String jwtToken = jwtUtil.parseJwt(request);
 
-        //throws JwtException() if token is invalid
-        boolean isJwtToken = jwtUtil.isJwtToken(jwtToken);
+                //throws JwtException() if token is invalid
+                boolean isJwtToken = jwtUtil.isJwtToken(jwtToken);
 
-        //if exception didn't happen get claims from the token
-        //read subject (login) from the claims
-        Claims jwtClaims = jwtUtil.getJwtClaims(jwtToken);
-        String login = jwtClaims.getSubject();
+                //if exception didn't happen get claims from the token
+                //read subject (login) from the claims
+                Claims jwtClaims = jwtUtil.getJwtClaims(jwtToken);
+                String login = jwtClaims.getSubject();
 
-        //returns JwtPerson as a result
-        //throws NotFoundException() if there is no such a user in the DB
-        UserDetails userDetails = userDetailsService.loadUserByUsername(login);
+                //returns JwtPerson as a result
+                //throws NotFoundException() if there is no such a user in the DB
+                UserDetails userDetails = userDetailsService.loadUserByUsername(login);
 
-        //build and set SecurityContext and put it into SecurityContextHolder
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+                //build and set SecurityContext and put it into SecurityContextHolder
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        filterChain.doFilter(request,response);
-      } catch (JwtException e) {
-        log.error("Jwt token is invalid. Error message :: " + e.getMessage());
-        //rethrowing this exception in order to conform to the original version of the code
-        throw new InvalidTokenException("Invalid token");
-      }
-    } else {
-      filterChain.doFilter(request, response);
+                filterChain.doFilter(request, response);
+            } catch (JwtException e) {
+                log.error("Jwt token is invalid. Error message :: " + e.getMessage());
+                //rethrowing this exception in order to conform to the original version of the code
+                throw new InvalidTokenException("Invalid token");
+            }
+        } else {
+            filterChain.doFilter(request, response);
+        }
     }
-  }
 }

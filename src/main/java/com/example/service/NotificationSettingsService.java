@@ -10,9 +10,9 @@ import com.example.exception.IncorrectDefaultNotificationTypeException;
 import com.example.exception.NotFoundException;
 import com.example.exception.OperationNotAvailableException;
 import com.example.mapper.ChangePasswordResponseDtoMapper;
-import com.example.model.enums.ConfirmationLock;
 import com.example.model.NotificationSettings;
 import com.example.model.Person;
+import com.example.model.enums.ConfirmationLock;
 import com.example.repository.NotificationSettingsRepository;
 import com.example.repository.PersonOperationRepository;
 import com.example.repository.PersonRepository;
@@ -33,179 +33,182 @@ import static com.example.util.TimeUtil.getUnlockTimeInMs;
 @Service
 @RequiredArgsConstructor
 public class NotificationSettingsService {
-  private final PersonRepository personRepository;
-  private final PersonOperationRepository operationRepository;
-  private final PersonOperationService personOperationService;
-  private final NotificationSettingsRepository notificationSettingsRepository;
-  private final ChangePasswordResponseDtoMapper changePasswordResponseDtoMapper;
- public NotificationSettings getNotificationSettings(UUID personId){
-   return notificationSettingsRepository.findByPerson(personId).orElseThrow();
- }
-  public void checkPersonConfirmationFullLock(Person person) {
-    var notificationSettings = getNotificationSettings(person.getPersonId());
+    private final PersonRepository personRepository;
+    private final PersonOperationRepository operationRepository;
+    private final PersonOperationService personOperationService;
+    private final NotificationSettingsRepository notificationSettingsRepository;
+    private final ChangePasswordResponseDtoMapper changePasswordResponseDtoMapper;
 
-    if (notificationSettings.getConfirmationLock().equals(ConfirmationLock.FULL_LOCK)) {
-      // на данном этпа пуш не реализован, поэтому эта проверка всегда будет возвращать
-      // отрицательный результат, когда добавлю пуш, тогда и буду исправлять
-      if (LocalDateTime.parse(notificationSettings.getEmailLockTime())
-          .isAfter(LocalDateTime.now())) {
-        throw new OperationNotAvailableException(
-                getUnlockTimeInMs(LocalDateTime.parse(notificationSettings.getEmailLockTime())));
-      }
-      notificationSettings.setConfirmationLock(ConfirmationLock.EMAIL_LOCK);
-      notificationSettings.setEmailLockTime("");
-      notificationSettings.setEmailLock(false);
-      notificationSettingsRepository.save(notificationSettings);
+    public NotificationSettings getNotificationSettings(UUID personId) {
+        return notificationSettingsRepository.findByPerson(personId).orElseThrow();
     }
-  }
 
-  public String checkPersonConfirmationDefaultTypeLock(Person person) {
-    var notificationSettings = getNotificationSettings(person.getPersonId());
-    if (notificationSettings
-        .getConfirmationLock()
-        .equals(ConfirmationLock.EMAIL_LOCK)) {
+    public void checkPersonConfirmationFullLock(Person person) {
+        var notificationSettings = getNotificationSettings(person.getPersonId());
 
-      if (LocalDateTime.parse(notificationSettings.getEmailLockTime())
-          .isAfter(LocalDateTime.now())) {
-        return notificationSettings.getEmailLockTime();
-      }
-      notificationSettings.setConfirmationLock(ConfirmationLock.NONE);
-      notificationSettings.setEmailLockTime("");
-      notificationSettings.setEmailLock(false);
-      notificationSettingsRepository.save(notificationSettings);
+        if (notificationSettings.getConfirmationLock().equals(ConfirmationLock.FULL_LOCK)) {
+            // на данном этпа пуш не реализован, поэтому эта проверка всегда будет возвращать
+            // отрицательный результат, когда добавлю пуш, тогда и буду исправлять
+            if (LocalDateTime.parse(notificationSettings.getEmailLockTime())
+                    .isAfter(LocalDateTime.now())) {
+                throw new OperationNotAvailableException(
+                        getUnlockTimeInMs(LocalDateTime.parse(notificationSettings.getEmailLockTime())));
+            }
+            notificationSettings.setConfirmationLock(ConfirmationLock.EMAIL_LOCK);
+            notificationSettings.setEmailLockTime("");
+            notificationSettings.setEmailLock(false);
+            notificationSettingsRepository.save(notificationSettings);
+        }
     }
-    return "";
-  }
 
-  public Person getPersonById(UUID personId) {
-    return personRepository
-        .findById(personId)
-        .orElseThrow(() -> new NotFoundException("Not found person with this id"));
-  }
+    public String checkPersonConfirmationDefaultTypeLock(Person person) {
+        var notificationSettings = getNotificationSettings(person.getPersonId());
+        if (notificationSettings
+                .getConfirmationLock()
+                .equals(ConfirmationLock.EMAIL_LOCK)) {
 
-  public DefaultConfirmationTypeResponse getPersonDefaultNotificationType(UUID personId) {
-
-    return  DefaultConfirmationTypeResponse
-            .builder()
-            .defaultConfirmationType(notificationSettingsRepository.findByPerson(personId).orElseThrow(() -> new NotFoundException("Not found person with this id")).getDefaultTypeOfConfirmation())
-            .build();
-  }
-
-  public void checkNewDefaultConfirmationType(
-      SetDefaultNotificationTypeRequest setDefaultNotificationTypeRequest, Person person) {
-
-    if (setDefaultNotificationTypeRequest.getNewDefaultType().equals("email")
-        || setDefaultNotificationTypeRequest.getNewDefaultType().equals("push")) {
-      if (getNotificationSettings(person.getPersonId())
-          .getDefaultTypeOfConfirmation()
-          .equals(setDefaultNotificationTypeRequest.getNewDefaultType())) {
-        throw new IncorrectDefaultNotificationTypeException("This is already default confirmation type");
-      }
-      var locks = getPersonConfirmationLocks(person.getPersonId());
-
-      var newTypeLock = locks.get(setDefaultNotificationTypeRequest.getNewDefaultType());
-
-      if (!newTypeLock.equals("")
-          && LocalDateTime.parse(newTypeLock).isAfter(LocalDateTime.now())) {
-        throw new DefaultConfirmationTypeLockedException(getUnlockTimeInMs(LocalDateTime.parse(newTypeLock)));
-      }
-    } else {
-      throw new IncorrectDefaultNotificationTypeException("Incorrect confirmation type");
+            if (LocalDateTime.parse(notificationSettings.getEmailLockTime())
+                    .isAfter(LocalDateTime.now())) {
+                return notificationSettings.getEmailLockTime();
+            }
+            notificationSettings.setConfirmationLock(ConfirmationLock.NONE);
+            notificationSettings.setEmailLockTime("");
+            notificationSettings.setEmailLock(false);
+            notificationSettingsRepository.save(notificationSettings);
+        }
+        return "";
     }
-  }
 
-  public SetDefaultConfirmationTypeResponse setPersonDefaultConfirmationType(
-      SetDefaultNotificationTypeRequest setTypeRequestDto) {
-    if(!setTypeRequestDto.getNewDefaultType().equals("email") && !setTypeRequestDto.getNewDefaultType().equals("push")){
-      throw new IncorrectDefaultNotificationTypeException("Incorrect confirmation type");
+    public Person getPersonById(UUID personId) {
+        return personRepository
+                .findById(personId)
+                .orElseThrow(() -> new NotFoundException("Not found person with this id"));
     }
-    var operation =
-        operationRepository
-            .findByPersonOperationId(setTypeRequestDto.getOperationId())
-            .orElseThrow(() -> new NotFoundException("Not found such operation"));
 
-    var person = getPersonById(operation.getPerson().getPersonId());
-    checkNewDefaultConfirmationType(setTypeRequestDto, person);
-    checkPersonConfirmationFullLock(operation.getPerson());
-      var notificationSettings = getNotificationSettings(person.getPersonId());
-    notificationSettings
-        .setDefaultTypeOfConfirmation(setTypeRequestDto.getNewDefaultType());
-    operation.setConfirmationType(setTypeRequestDto.getNewDefaultType());
-    operationRepository.save(operation);
-    personOperationService.sendOperationConfirmRequestEvent(
-        operation.getPersonOperationId(),
-        notificationSettingsRepository.save(notificationSettings).getPerson(),
-        "notification-request");
-    if(setTypeRequestDto.getNewDefaultType().equals("email")){
-      return SetDefaultConfirmationTypeResponse.builder().personContact(operation.getPerson().getEmail()).build();
+    public DefaultConfirmationTypeResponse getPersonDefaultNotificationType(UUID personId) {
+
+        return DefaultConfirmationTypeResponse
+                .builder()
+                .defaultConfirmationType(notificationSettingsRepository.findByPerson(personId).orElseThrow(() -> new NotFoundException("Not found person with this id")).getDefaultTypeOfConfirmation())
+                .build();
     }
-    return SetDefaultConfirmationTypeResponse.builder().personContact("deviceToken?").build();
-  }
-  public String getPersonContact(Person person){
-      var notificationSettings = getNotificationSettings(person.getPersonId());
-     if (notificationSettings.getDefaultTypeOfConfirmation().equals("push")) {
-       //когда будет реализован пуш то добавлю возврат токена
+
+    public void checkNewDefaultConfirmationType(
+            SetDefaultNotificationTypeRequest setDefaultNotificationTypeRequest, Person person) {
+
+        if (setDefaultNotificationTypeRequest.getNewDefaultType().equals("email")
+                || setDefaultNotificationTypeRequest.getNewDefaultType().equals("push")) {
+            if (getNotificationSettings(person.getPersonId())
+                    .getDefaultTypeOfConfirmation()
+                    .equals(setDefaultNotificationTypeRequest.getNewDefaultType())) {
+                throw new IncorrectDefaultNotificationTypeException("This is already default confirmation type");
+            }
+            var locks = getPersonConfirmationLocks(person.getPersonId());
+
+            var newTypeLock = locks.get(setDefaultNotificationTypeRequest.getNewDefaultType());
+
+            if (!newTypeLock.equals("")
+                    && LocalDateTime.parse(newTypeLock).isAfter(LocalDateTime.now())) {
+                throw new DefaultConfirmationTypeLockedException(getUnlockTimeInMs(LocalDateTime.parse(newTypeLock)));
+            }
+        } else {
+            throw new IncorrectDefaultNotificationTypeException("Incorrect confirmation type");
+        }
     }
-     return person.getEmail();
-  }
 
-  public ChangePasswordResponseDto sendConfirmationCodeRequest(
-      Person person, String operationType) {
-    var operationId = personOperationService.createOperation(person, operationType);
-    var lockTime = checkPersonConfirmationDefaultTypeLock(person);
-    if (lockTime.equals("")) {
-      personOperationService.sendOperationConfirmRequestEvent(
-          operationId, person, "notification-request");
+    public SetDefaultConfirmationTypeResponse setPersonDefaultConfirmationType(
+            SetDefaultNotificationTypeRequest setTypeRequestDto) {
+        if (!setTypeRequestDto.getNewDefaultType().equals("email") && !setTypeRequestDto.getNewDefaultType().equals("push")) {
+            throw new IncorrectDefaultNotificationTypeException("Incorrect confirmation type");
+        }
+        var operation =
+                operationRepository
+                        .findByPersonOperationId(setTypeRequestDto.getOperationId())
+                        .orElseThrow(() -> new NotFoundException("Not found such operation"));
 
-      return changePasswordResponseDtoMapper.toChangePasswordResponsePreconditionRequiredDto(
-          HttpStatus.NOT_ACCEPTABLE,
-          getPersonContact(person),
-          operationId,
-          "This operation requires confirmation by code");
-    }
-    return changePasswordResponseDtoMapper.toChangePasswordResponseConfirmationLockedDto(
-        HttpStatus.LOCKED,
-        getPersonContact(person),
-        operationId,
-        "Chose another confirmation type",
-            getUnlockTimeInMs(LocalDateTime.parse(lockTime)));
-  }
-
-  public void updateNotificationTypeStatus(OperationConfirmEvent confirmDto) {
-    var notificationSettings = getNotificationSettings(confirmDto.getPersonId());
-    switch (confirmDto.getStatus()) {
-      case "confirm" -> personOperationService.operationConfirmation(confirmDto);
-      case "lock" -> {
+        var person = getPersonById(operation.getPerson().getPersonId());
+        checkNewDefaultConfirmationType(setTypeRequestDto, person);
+        checkPersonConfirmationFullLock(operation.getPerson());
+        var notificationSettings = getNotificationSettings(person.getPersonId());
         notificationSettings
-                .setConfirmationLock(ConfirmationLock.EMAIL_LOCK);
-        notificationSettings.setEmailLockTime(confirmDto.getLockTime());
-        notificationSettingsRepository.save(notificationSettings);
-      }
-      case "fullLock" -> {
-        notificationSettings
-                .setConfirmationLock(ConfirmationLock.FULL_LOCK);
-       notificationSettings.setPushLockTime(confirmDto.getLockTime());
-          notificationSettingsRepository.save(notificationSettings);
-      }
+                .setDefaultTypeOfConfirmation(setTypeRequestDto.getNewDefaultType());
+        operation.setConfirmationType(setTypeRequestDto.getNewDefaultType());
+        operationRepository.save(operation);
+        personOperationService.sendOperationConfirmRequestEvent(
+                operation.getPersonOperationId(),
+                notificationSettingsRepository.save(notificationSettings).getPerson(),
+                "notification-request");
+        if (setTypeRequestDto.getNewDefaultType().equals("email")) {
+            return SetDefaultConfirmationTypeResponse.builder().personContact(operation.getPerson().getEmail()).build();
+        }
+        return SetDefaultConfirmationTypeResponse.builder().personContact("deviceToken?").build();
     }
-  }
 
-  public Map<String, String> getPersonConfirmationLocks(UUID personId) {
-    Map<String, String> locks = new HashMap<>();
+    public String getPersonContact(Person person) {
+        var notificationSettings = getNotificationSettings(person.getPersonId());
+        if (notificationSettings.getDefaultTypeOfConfirmation().equals("push")) {
+            //когда будет реализован пуш то добавлю возврат токена
+        }
+        return person.getEmail();
+    }
 
-    var notificationSettings = getNotificationSettings(personId);
-    locks.put("email", notificationSettings.getEmailLockTime());
-    locks.put("push", notificationSettings.getPushLockTime());
-    return locks;
-  }
+    public ChangePasswordResponseDto sendConfirmationCodeRequest(
+            Person person, String operationType) {
+        var operationId = personOperationService.createOperation(person, operationType);
+        var lockTime = checkPersonConfirmationDefaultTypeLock(person);
+        if (lockTime.equals("")) {
+            personOperationService.sendOperationConfirmRequestEvent(
+                    operationId, person, "notification-request");
 
-  @KafkaListener(topics = "user-identity", groupId = "user-identity")
-  @Transactional
-  public void listenOperationConfirmationResponse(
-      ConsumerRecord<String, OperationConfirmEvent> consumerRecord) {
+            return changePasswordResponseDtoMapper.toChangePasswordResponsePreconditionRequiredDto(
+                    HttpStatus.NOT_ACCEPTABLE,
+                    getPersonContact(person),
+                    operationId,
+                    "This operation requires confirmation by code");
+        }
+        return changePasswordResponseDtoMapper.toChangePasswordResponseConfirmationLockedDto(
+                HttpStatus.LOCKED,
+                getPersonContact(person),
+                operationId,
+                "Chose another confirmation type",
+                getUnlockTimeInMs(LocalDateTime.parse(lockTime)));
+    }
 
-    var operationConfirm = consumerRecord.value();
-    updateNotificationTypeStatus(operationConfirm);
-  }
+    public void updateNotificationTypeStatus(OperationConfirmEvent confirmDto) {
+        var notificationSettings = getNotificationSettings(confirmDto.getPersonId());
+        switch (confirmDto.getStatus()) {
+            case "confirm" -> personOperationService.operationConfirmation(confirmDto);
+            case "lock" -> {
+                notificationSettings
+                        .setConfirmationLock(ConfirmationLock.EMAIL_LOCK);
+                notificationSettings.setEmailLockTime(confirmDto.getLockTime());
+                notificationSettingsRepository.save(notificationSettings);
+            }
+            case "fullLock" -> {
+                notificationSettings
+                        .setConfirmationLock(ConfirmationLock.FULL_LOCK);
+                notificationSettings.setPushLockTime(confirmDto.getLockTime());
+                notificationSettingsRepository.save(notificationSettings);
+            }
+        }
+    }
+
+    public Map<String, String> getPersonConfirmationLocks(UUID personId) {
+        Map<String, String> locks = new HashMap<>();
+
+        var notificationSettings = getNotificationSettings(personId);
+        locks.put("email", notificationSettings.getEmailLockTime());
+        locks.put("push", notificationSettings.getPushLockTime());
+        return locks;
+    }
+
+    @KafkaListener(topics = "user-identity", groupId = "user-identity")
+    @Transactional
+    public void listenOperationConfirmationResponse(
+            ConsumerRecord<String, OperationConfirmEvent> consumerRecord) {
+
+        var operationConfirm = consumerRecord.value();
+        updateNotificationTypeStatus(operationConfirm);
+    }
 
 }

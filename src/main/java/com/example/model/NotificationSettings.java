@@ -20,38 +20,39 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificationSettings {
-  @Enumerated(EnumType.STRING)
-  public ConfirmationLock confirmationLock;
 
-  @Id
-  @EqualsAndHashCode.Exclude
-  @GeneratedValue(generator = "UUID")
-  @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-  private UUID notificationSettingsId;
+    @Enumerated(EnumType.STRING)
+    public ConfirmationLock confirmationLock;
 
-  private String defaultTypeOfConfirmation;
-  private Boolean emailLock;
-  private String emailLockTime;
-  private Boolean pushLock;
-  private String pushLockTime;
+    @Id
+    @EqualsAndHashCode.Exclude
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    private UUID notificationSettingsId;
 
-  @OneToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
-  @JoinColumn(name = "person_id")
-  @ToString.Exclude
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private Person person;
+    private String defaultTypeOfConfirmation;
+    private Boolean emailLock;
+    private String emailLockTime;
+    private Boolean pushLock;
+    private String pushLockTime;
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-    NotificationSettings that = (NotificationSettings) o;
-    return notificationSettingsId != null
-        && Objects.equals(notificationSettingsId, that.notificationSettingsId);
-  }
+    @OneToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @JoinColumn(name = "person_id")
+    @ToString.Exclude
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Person person;
 
-  @Override
-  public int hashCode() {
-    return getClass().hashCode();
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        NotificationSettings that = (NotificationSettings) o;
+        return notificationSettingsId != null
+                && Objects.equals(notificationSettingsId, that.notificationSettingsId);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

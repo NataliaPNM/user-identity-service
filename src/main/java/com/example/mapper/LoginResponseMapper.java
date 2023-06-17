@@ -7,10 +7,7 @@ import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface LoginResponseMapper {
-  LoginResponseDto toLoginResponseDto(
-      String token,
-      String refreshToken,
-      int accessTokenExpirationTime,
-      int refreshTokenExpirationTime,
-      UUID personId);
+
+  LoginResponseDto toLoginResponseDto(String token, String refreshToken, int accessTokenExpirationTime,
+      int refreshTokenExpirationTime, UUID personId);
 }

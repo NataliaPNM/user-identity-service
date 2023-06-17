@@ -20,30 +20,30 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Address {
-  @Id
-  @EqualsAndHashCode.Exclude
-  @GeneratedValue(generator = "UUID")
-  @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-  private UUID addressId;
+    @Id
+    @EqualsAndHashCode.Exclude
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    private UUID addressId;
 
-  private String country;
-  private String city;
-  private String street;
-  private Integer postalCode;
-  private Integer house;
-  private Integer flat;
-  private Integer block;
+    private String country;
+    private String city;
+    private String street;
+    private Integer postalCode;
+    private Integer house;
+    private Integer flat;
+    private Integer block;
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-    Address address = (Address) o;
-    return addressId != null && Objects.equals(addressId, address.addressId);
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Address address = (Address) o;
+        return addressId != null && Objects.equals(addressId, address.addressId);
+    }
 
-  @Override
-  public int hashCode() {
-    return getClass().hashCode();
-  }
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

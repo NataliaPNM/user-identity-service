@@ -19,39 +19,39 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Person {
 
-  @Id
-  @EqualsAndHashCode.Exclude
-  @GeneratedValue(generator = "UUID")
-  @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-  @Column(name = "person_id")
-  private UUID personId;
+    @Id
+    @EqualsAndHashCode.Exclude
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "person_id")
+    private UUID personId;
 
-  private Long phone;
+    private Long phone;
 
-  private String name;
+    private String name;
 
-  private String surname;
-  private String patronymic;
+    private String surname;
+    private String patronymic;
 
-  private String email;
+    private String email;
 
-  @ManyToOne(cascade = CascadeType.MERGE)
-  @JoinColumn(name = "address_id")
-  private Address residentialAddress;
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "address_id")
+    private Address residentialAddress;
 
-  @Enumerated(EnumType.STRING)
-  private PersonRole role;
+    @Enumerated(EnumType.STRING)
+    private PersonRole role;
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-    Person person = (Person) o;
-    return personId != null && Objects.equals(personId, person.personId);
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Person person = (Person) o;
+        return personId != null && Objects.equals(personId, person.personId);
+    }
 
-  @Override
-  public int hashCode() {
-    return getClass().hashCode();
-  }
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

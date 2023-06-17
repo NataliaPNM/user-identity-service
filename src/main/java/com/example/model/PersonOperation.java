@@ -18,31 +18,31 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PersonOperation {
 
-  @Id
-  @EqualsAndHashCode.Exclude
-  @GeneratedValue(generator = "UUID")
-  @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-  private UUID personOperationId;
+    @Id
+    @EqualsAndHashCode.Exclude
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    private UUID personOperationId;
 
-  @ManyToOne
-  @JoinColumn(name = "person_id")
-  private Person person;
+    @ManyToOne
+    @JoinColumn(name = "person_id")
+    private Person person;
 
-  private String operationType;
-  private String confirmationType;
-  private String operationExpirationTime;
+    private String operationType;
+    private String confirmationType;
+    private String operationExpirationTime;
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-    PersonOperation operation = (PersonOperation) o;
-    return personOperationId != null
-        && Objects.equals(personOperationId, operation.personOperationId);
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        PersonOperation operation = (PersonOperation) o;
+        return personOperationId != null
+                && Objects.equals(personOperationId, operation.personOperationId);
+    }
 
-  @Override
-  public int hashCode() {
-    return getClass().hashCode();
-  }
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
